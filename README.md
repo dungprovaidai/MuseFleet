@@ -31,6 +31,8 @@ macOS Actions mặc định được chặn bằng repository variable để tr�
 
 ## Thiết lập tài khoản
 
+Hướng dẫn riêng: [ACCOUNT_SETUP.md](ACCOUNT_SETUP.md).
+
 1. Cài bản app đã ký hợp lệ; mở Accounts → Add account.
 2. Đặt tên, vai trò, màu/avatar và lưu profile. UUID là định danh của website data store, không phải tên tài khoản Meta.
 3. Mở profile và đăng nhập trực tiếp trên website Muse. Chỉ nhập mật khẩu/OTP vào giao diện chính thức; không gửi chúng vào issue, logs hoặc công cụ AI.

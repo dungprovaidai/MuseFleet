@@ -79,6 +79,22 @@ final class FleetStoreTests: XCTestCase {
         XCTAssertNil(FleetStore(directory: directory).accounts.first?.lastURL)
     }
 
+    func testEventSaveFailureDoesNotConsumeIDOrProduceFalseDeliverySuccess() throws {
+        let store = FleetStore(directory: directory)
+        let account = AccountProfile(name: "A")
+        store.addAccount(account)
+        let file = directory.appendingPathComponent("fleet.json")
+        try FileManager.default.removeItem(at: file)
+        try FileManager.default.createDirectory(at: file, withIntermediateDirectories: false)
+        let event = fixtureEvent(account)
+        XCTAssertFalse(store.record(event))
+        XCTAssertTrue(store.events.isEmpty)
+        XCTAssertNotNil(store.storageError)
+        try FileManager.default.removeItem(at: file)
+        XCTAssertTrue(store.record(event))
+        XCTAssertEqual(store.events.count, 1)
+    }
+
     private func fixtureEvent(_ account: AccountProfile) -> FleetEvent {
         FleetEvent(id: account.id.uuidString + ":fixture", accountID: account.id, accountName: account.name,
                    accountSymbol: account.symbol, accountColorHex: account.colorHex, type: .response)

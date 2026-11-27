@@ -14,7 +14,7 @@ enum KeychainLock {
         if status == errSecItemNotFound { return false }
         // Fail closed when the Keychain is temporarily inaccessible.
         guard status == errSecSuccess, let data = result as? Data else { return true }
-        return data == Data([1])
+        return data != Data([0])
     }
 
     static func setEnabled(_ enabled: Bool) throws {

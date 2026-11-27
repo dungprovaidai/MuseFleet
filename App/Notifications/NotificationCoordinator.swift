@@ -37,8 +37,9 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
         guard let account = store.account(id: accountID), !eventID.isEmpty,
               eventID.utf8.count <= 400 else { return }
         let id = accountID.uuidString + ":" + eventID
+        let hidesPreview = store.settings.hideNotificationPreviews
         // The default privacy policy also avoids persisting message text in the inbox.
-        let safePreview = store.settings.hideNotificationPreviews ? nil : preview.map { String($0.prefix(400)) }
+        let safePreview = hidesPreview ? nil : preview.map { String($0.prefix(400)) }
         let event = FleetEvent(id: id, accountID: accountID, accountName: account.name,
                                accountSymbol: account.symbol, accountColorHex: account.colorHex,
                                type: type, preview: safePreview,
@@ -49,8 +50,8 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
               [.authorized, .provisional, .ephemeral].contains(authorizationStatus) else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = store.settings.hideNotificationPreviews ? "MuseFleet" : account.name
-        content.body = store.settings.hideNotificationPreviews ? "An account has an update. Open MuseFleet to view it." : (safePreview ?? type.title)
+        content.title = hidesPreview ? "MuseFleet" : account.name
+        content.body = hidesPreview ? "An account has an update. Open MuseFleet to view it." : (safePreview ?? type.title)
         content.threadIdentifier = accountID.uuidString
         content.categoryIdentifier = "MUSE_EVENT"
         content.badge = NSNumber(value: store.unreadCount())
@@ -61,6 +62,11 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
         Task {
             do {
                 try await center.add(request)
+                if self.store.account(id: accountID)?.notificationsEnabled != true ||
+                    (self.store.settings.hideNotificationPreviews && !hidesPreview) {
+                    self.center.removePendingNotificationRequests(withIdentifiers: [id])
+                    self.center.removeDeliveredNotifications(withIdentifiers: [id])
+                }
                 deliveryError = nil
             } catch {
                 deliveryError = "An update was saved to Inbox, but iOS could not display its notification."
@@ -72,8 +78,7 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
     }
 
     func syncBadge() {
-        let count = store.unreadCount()
-        Task { try? await center.setBadgeCount(count) }
+        Task { try? await center.setBadgeCount(store.unreadCount()) }
     }
 
     func removeNotifications(accountID: UUID) {
@@ -94,7 +99,10 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
     }
 
     func applyPrivacySettings() {
-        if store.settings.hideNotificationPreviews { center.removeAllDeliveredNotifications() }
+        if store.settings.hideNotificationPreviews {
+            center.removeAllPendingNotificationRequests()
+            center.removeAllDeliveredNotifications()
+        }
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -114,7 +122,12 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
                                           withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         Task { @MainActor in
             let allowed = !QuietHours.contains(Date(), settings: self.store.settings)
-            completionHandler(allowed ? [.banner, .list, .badge] : [.badge])
+            var options: UNNotificationPresentationOptions = [.badge]
+            if allowed {
+                options.formUnion([.banner, .list])
+                if self.store.settings.soundEnabled { options.insert(.sound) }
+            }
+            completionHandler(options)
         }
     }
 }

@@ -77,6 +77,14 @@ struct MuseFleetApp: App {
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
                 browsers.keepOnly(accountID: navigation.selectedAccountID)
             }
+            .alert("App lock", isPresented: Binding(
+                get: { appLock.errorMessage != nil && !appLock.isLocked },
+                set: { if !$0 { appLock.errorMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) { appLock.errorMessage = nil }
+            } message: {
+                Text(appLock.errorMessage ?? "")
+            }
         }
     }
 
