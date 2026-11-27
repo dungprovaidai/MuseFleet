@@ -8,14 +8,31 @@
 
 | Phase | State | Evidence / blocker |
 |---|---|---|
-| 0 Research | IN PROGRESS | Official Muse, Apple, GitHub documentation being checked |
-| 1 Isolation and notification PoCs | PENDING | Apple execution environment and real Muse login required |
-| 2 Core browser | PENDING | Per-UUID persistent data stores |
-| 3 Notifications | PENDING | Real Muse event source must be verified |
-| 4 Native UI | PENDING | Home, Accounts, Inbox, Settings |
+| 0 Research | DOCUMENTATION COMPLETE; runtime gates open | Official Muse home/form fetched; iOS17 identified stores documented; Muse embedded login and authenticated event DOM unverified |
+| 1 Isolation and notification PoCs | TEST SOURCE IN PROGRESS; runtime BLOCKED | Apple execution environment and real Muse login required |
+| 2 Core browser | IN PROGRESS (isolated branch) | Per-UUID persistent data stores, lifecycle and downloads |
+| 3 Notifications | CORE IMPLEMENTED; Muse source BLOCKED | Local persistence/routing/dedup/quiet hours implemented; no real event source verified |
+| 4 Native UI | IN PROGRESS (isolated branch) | Home, Accounts, Inbox, Settings; original icon generated |
 | 5 Background delivery | BLOCKED | No verified upstream event source or APNs credentials |
-| 6 Security and QA | PENDING | Automated tests plus physical device checklist |
-| 7 GitHub and IPA | PENDING | Verify runner cost authorization before execution |
+| 6 Security and QA | IN PROGRESS | App lock, URL policy, privacy, atomic storage and unit test source; no Apple runtime execution |
+| 7 GitHub and IPA | REPO CREATED; build BLOCKED | Private https://github.com/dungprovaidai/MuseFleet; billing usage requires missing user scope, no macOS execution yet |
 | 8 Delivery | PENDING | Requires real artifact and honest test evidence |
 
 Never treat a written test, simulator-only check or packaged placeholder as a verified production feature.
+
+## Decisions
+
+- Source website: official `https://muse.ai/`; initial login form verified by public HTTP fetch. Muse's official native app minimum iOS18 does not establish third-party iOS17 web compatibility.
+- Production DOM adapter remains disabled until the authenticated interface has been observed and tested. Muse is asynchronous; typing cessation cannot prove task completion.
+- No BGAppRefresh registration or relay deployment without a usable authorized data source. No 24/7 WebView monitoring claim.
+- Codable atomic local snapshot selected for the small metadata dataset; complete file protection, no backup, corrupt files preserved.
+- Keychain stores the device-local lock preference; device-owner authentication protects changes. No Meta secrets are read or logged.
+- Six subagents dispatched in branches/worktrees: three official-source research topics, browser engine, native UI, DevOps. A report writer synthesizes research.
+- Skill routing: existing ponytail and deep-research used. Native iOS skill search failed on a read-only Windows cache object; no skill was installed or executed from an unapproved candidate.
+
+## Current blockers
+
+1. MacOS Actions costs/quota cannot be verified with the current token; the user forbids unapproved charges. Workflows will be disabled by default until a concrete run is approved or no-charge budget conditions verified.
+2. No physical iPhone or browser MCP; user-controlled Muse login and two-account live isolation are not tested.
+3. No verified authenticated Muse DOM or official event upstream; real response notifications and background/locked/force-quit delivery remain incomplete.
+4. No Apple signing credentials; signed IPA and APNs are unavailable. A real unsigned arm64 IPA still requires an Apple build runner.

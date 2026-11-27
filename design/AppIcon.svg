@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="18%" cy="10%" r="115%"><stop stop-color="#3b3479"/><stop offset=".53" stop-color="#18172d"/><stop offset="1" stop-color="#0c101d"/></radialGradient>
+    <linearGradient id="sail" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5f0ff"/><stop offset="1" stop-color="#aea2ff"/></linearGradient>
+  </defs>
+  <path fill="url(#bg)" d="M0 0H1024V1024H0Z"/>
+  <path d="M194 708L329 300Q337 276 356 297L514 491L672 297Q691 276 699 300L834 708H699L635 499L514 643L393 499L329 708Z" fill="url(#sail)"/>
+  <path d="M444 744H584" stroke="#c3b6ff" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="788" cy="260" r="34" fill="#b9f5e5"/>
+</svg>
