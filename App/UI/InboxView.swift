@@ -24,11 +24,12 @@ struct InboxView: View {
     @State private var accountID: UUID?
     @State private var kind: EventKind?
     @State private var period = InboxPeriod.anytime
+    @State private var groupByAccount = false
     @State private var showingFilters = false
     @State private var detail: FleetEvent?
     @State private var pendingEvent: FleetEvent?
 
-    private var hasFilters: Bool { accountID != nil || kind != nil || period != .anytime }
+    private var hasFilters: Bool { accountID != nil || kind != nil || period != .anytime || groupByAccount }
 
     private var events: [FleetEvent] {
         let cutoff = period.start
@@ -45,6 +46,16 @@ struct InboxView: View {
                 (kind == nil || event.type == kind) && (cutoff.map { event.timestamp >= $0 } ?? true) &&
                 (search.isEmpty || searchable.localizedStandardContains(search))
         }.sorted { $0.timestamp > $1.timestamp }
+    }
+
+    private var accountGroups: [(id: UUID, events: [FleetEvent])] {
+        Dictionary(grouping: events, by: \.accountID)
+            .map { (id: $0.key, events: $0.value) }
+            .sorted {
+                let first = $0.events.first?.timestamp ?? .distantPast
+                let second = $1.events.first?.timestamp ?? .distantPast
+                return first == second ? $0.id.uuidString < $1.id.uuidString : first > second
+            }
     }
 
     var body: some View {
@@ -82,45 +93,24 @@ struct InboxView: View {
                     }
                 } else {
                     List {
-                        Section {
-                            ForEach(events) { event in
-                                Button {
-                                    if store.account(id: event.accountID) != nil {
-                                        openFleetEvent(event, store: store, pool: pool, navigation: navigation, notifications: notifications)
-                                    } else {
-                                        detail = event
-                                    }
-                                } label: {
-                                    EventRow(event: event, hidePreview: store.settings.hideNotificationPreviews)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityHint("Opens the account and marks this event as read")
-                                .contextMenu {
-                                    Button("Details", systemImage: "info.circle") { detail = event }
-                                    if !event.isRead {
-                                        Button("Mark read", systemImage: "checkmark") { markRead(event) }
-                                            .disabled(store.persistenceUnavailable)
-                                    }
-                                    Button("Delete event", systemImage: "trash", role: .destructive) { delete(event) }
-                                        .disabled(store.persistenceUnavailable)
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button("Delete", systemImage: "trash", role: .destructive) { delete(event) }
-                                        .disabled(store.persistenceUnavailable)
-                                    Button("Details", systemImage: "info.circle") { detail = event }.tint(.gray)
-                                }
-                                .swipeActions(edge: .leading) {
-                                    if !event.isRead {
-                                        Button("Read", systemImage: "checkmark") { markRead(event) }
-                                            .tint(FleetStyle.accent).disabled(store.persistenceUnavailable)
-                                    }
+                        if groupByAccount {
+                            let groups = accountGroups
+                            ForEach(groups, id: \.id) { group in
+                                Section {
+                                    ForEach(group.events) { eventRow($0) }
+                                } header: {
+                                    Text(store.account(id: group.id)?.name ?? group.events.first?.accountName ?? "Unknown account")
+                                } footer: {
+                                    if group.id == groups.last?.id { privacyFooter }
                                 }
                             }
-                        } header: {
-                            Text("\(events.count) \(events.count == 1 ? "event" : "events")")
-                        } footer: {
-                            if store.settings.hideNotificationPreviews {
-                                Label("Previews are hidden. You can reveal an individual preview in event details.", systemImage: "eye.slash")
+                        } else {
+                            Section {
+                                ForEach(events) { eventRow($0) }
+                            } header: {
+                                Text("\(events.count) \(events.count == 1 ? "event" : "events")")
+                            } footer: {
+                                privacyFooter
                             }
                         }
                     }
@@ -152,6 +142,46 @@ struct InboxView: View {
         }
     }
 
+    private func eventRow(_ event: FleetEvent) -> some View {
+        Button {
+            if store.account(id: event.accountID) != nil {
+                openFleetEvent(event, store: store, pool: pool, navigation: navigation, notifications: notifications)
+            } else {
+                detail = event
+            }
+        } label: {
+            EventRow(event: event, hidePreview: store.settings.hideNotificationPreviews)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens the account and marks this event as read")
+        .contextMenu {
+            Button("Details", systemImage: "info.circle") { detail = event }
+            if !event.isRead {
+                Button("Mark read", systemImage: "checkmark") { markRead(event) }
+                    .disabled(store.persistenceUnavailable)
+            }
+            Button("Delete event", systemImage: "trash", role: .destructive) { delete(event) }
+                .disabled(store.persistenceUnavailable)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button("Delete", systemImage: "trash", role: .destructive) { delete(event) }
+                .disabled(store.persistenceUnavailable)
+            Button("Details", systemImage: "info.circle") { detail = event }.tint(.gray)
+        }
+        .swipeActions(edge: .leading) {
+            if !event.isRead {
+                Button("Read", systemImage: "checkmark") { markRead(event) }
+                    .tint(FleetStyle.accent).disabled(store.persistenceUnavailable)
+            }
+        }
+    }
+
+    @ViewBuilder private var privacyFooter: some View {
+        if store.settings.hideNotificationPreviews {
+            Label("Previews are hidden. You can reveal an individual preview in event details.", systemImage: "eye.slash")
+        }
+    }
+
     private var filtersSheet: some View {
         NavigationStack {
             Form {
@@ -168,8 +198,11 @@ struct InboxView: View {
                         ForEach(InboxPeriod.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                     }
                 }
+                Section("Display") {
+                    Toggle("Group by account", isOn: $groupByAccount)
+                }
                 Section {
-                    Button("Reset filters") { accountID = nil; kind = nil; period = .anytime }
+                    Button("Reset filters") { accountID = nil; kind = nil; period = .anytime; groupByAccount = false }
                 }
             }
             .navigationTitle("Inbox filters").navigationBarTitleDisplayMode(.inline)
@@ -179,7 +212,7 @@ struct InboxView: View {
     }
 
     private func resetFilters() {
-        search = ""; accountID = nil; kind = nil; period = .anytime; navigation.inboxScope = .all
+        search = ""; accountID = nil; kind = nil; period = .anytime; groupByAccount = false; navigation.inboxScope = .all
     }
 
     private func markRead(_ event: FleetEvent) {
