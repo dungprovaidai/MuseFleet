@@ -2,7 +2,7 @@
 
 MuseFleet targets iPhone on iOS 17 or later, uses Swift 5 language mode, and has no runtime package dependencies. The bundle identifier is `com.dungprovaidai.musefleet`. The checked-in `MuseFleet.xcodeproj` and shared `MuseFleet` scheme include the app, hosted `MuseFleetTests`, and `MuseFleetUITests` targets.
 
-Windows can generate the project and test the pipeline scripts. Xcode, simulator tests, code signing, and a real IPA require macOS. No Apple build or device installation has been verified by the Windows pipeline work.
+Windows can generate the project and test the pipeline scripts. Xcode, simulator tests, code signing, and a real IPA require macOS. Authorized public GitHub Actions runs have compiled the simulator application and passed the hosted unit suite; UI testing currently blocks device packaging. See TEST_REPORT.md for exact run evidence. No physical-device installation has been verified.
 
 ## Integrating source files
 
@@ -52,7 +52,7 @@ The IPA artifact contains:
 - A `.sha256` file identifying the exact IPA bytes.
 - `build-metadata.json` recording bundle/version/build, arm64/iOS status, signature status, checksum, Xcode version, commit, and workflow run.
 
-Actual `.xcresult` files are uploaded with `always()` even after build/test failures when those files exist. After successful simulator tests, `xcresulttool export attachments` exports actual test screenshots into the results artifact. These are simulator captures with test-created profile metadata, never screenshots of a logged-in user or proof of physical-device behavior. No screenshots are claimed until that command has run successfully.
+Actual `.xcresult` files are uploaded with `always()` even after build/test failures when those files exist. `xcresulttool export attachments` exports test attachments after successful simulator tests, and a separate failure step attempts the same export when a failed test result exists. A failure still blocks IPA packaging. These are simulator captures with test-created profile metadata, never screenshots of a logged-in user or proof of physical-device behavior. No screenshots are claimed until the export has run successfully and its output has been inspected.
 
 ## Signed IPA
 
