@@ -1,0 +1,49 @@
+import Foundation
+
+enum BrowserNavigationPolicy {
+    // The public Muse page uses first-party login. Add other hosts only after verifying a real login flow.
+    static let verifiedLoginHosts: Set<String> = []
+
+    static func allowsInWeb(_ url: URL) -> Bool {
+        URLPolicy.isMuse(url) || (URLPolicy.isSafeExternal(url) &&
+            verifiedLoginHosts.contains(url.host?.lowercased() ?? ""))
+    }
+
+    static func allowsBlobDownload(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "blob",
+              let origin = URL(string: String(url.absoluteString.dropFirst(5))) else { return false }
+        return URLPolicy.isMuse(origin)
+    }
+
+    static func canAskToOpenExternally(_ url: URL) -> Bool {
+        guard url.absoluteString.utf8.count <= 4096,
+              let parts = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              parts.user == nil, parts.password == nil,
+              let scheme = parts.scheme?.lowercased() else { return false }
+        if scheme == "https" { return URLPolicy.isSafeExternal(url) }
+        // App handoffs require the same explicit confirmation; executable/local URL schemes are blocked.
+        let blocked = ["http", "javascript", "data", "file", "about", "blob", "applewebdata", "webkit", "ftp", "ws", "wss"]
+        return !blocked.contains(scheme) &&
+            !url.absoluteString.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) })
+    }
+
+    static func visitURL(_ url: URL?) -> URL? {
+        guard let url, let safe = URLPolicy.safeConversation(url),
+              var parts = URLComponents(url: safe, resolvingAgainstBaseURL: false) else { return nil }
+        let authenticationSegments: Set<String> = ["auth", "oauth", "oauth2", "login", "signin", "sign-in", "signup", "callback", "authorize"]
+        guard !safe.pathComponents.contains(where: { authenticationSegments.contains($0.lowercased()) }) else { return nil }
+        parts.query = nil
+        parts.fragment = nil
+        return parts.url
+    }
+
+    static func safeFilename(_ suggested: String) -> String {
+        let lastComponent = suggested.replacingOccurrences(of: "\\", with: "/")
+            .components(separatedBy: "/").last ?? ""
+        let cleaned = lastComponent.unicodeScalars.filter {
+            !CharacterSet.controlCharacters.contains($0) && $0 != ":"
+        }.map(String.init).joined()
+        let name = String(cleaned.prefix(120)).trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty || name == "." || name == ".." ? "Download" : name
+    }
+}
