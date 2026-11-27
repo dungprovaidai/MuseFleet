@@ -5,7 +5,7 @@ final class MuseFleetUITests: XCTestCase {
     func testFourTabsAndAccountCreationPersistAfterRelaunch() {
         let app = XCUIApplication()
         app.launch()
-        guard let accountTab = waitForHittableTab("Accounts", in: app, timeout: 20) else {
+        guard let accountTab = waitForHittableTab("tab.accounts", label: "Accounts", in: app, timeout: 20) else {
             XCTFail("Accounts tab did not become hittable.\n\(app.debugDescription)")
             return
         }
@@ -24,19 +24,19 @@ final class MuseFleetUITests: XCTestCase {
         if close.waitForExistence(timeout: 3) { close.tap() }
         app.terminate()
         app.launch()
-        guard let relaunchedAccountTab = waitForHittableTab("Accounts", in: app, timeout: 20) else {
+        guard let relaunchedAccountTab = waitForHittableTab("tab.accounts", label: "Accounts", in: app, timeout: 20) else {
             XCTFail("Accounts tab did not become hittable after relaunch.\n\(app.debugDescription)")
             return
         }
         relaunchedAccountTab.tap()
         XCTAssertTrue(app.staticTexts[fixture].waitForExistence(timeout: 5))
-        guard let inboxTab = waitForHittableTab("Inbox", in: app, timeout: 10) else {
+        guard let inboxTab = waitForHittableTab("tab.inbox", label: "Inbox", in: app, timeout: 10) else {
             XCTFail("Inbox tab did not become hittable.\n\(app.debugDescription)")
             return
         }
         inboxTab.tap()
         XCTAssertTrue(app.navigationBars["Inbox"].exists)
-        guard let settingsTab = waitForHittableTab("Settings", in: app, timeout: 10) else {
+        guard let settingsTab = waitForHittableTab("tab.settings", label: "Settings", in: app, timeout: 10) else {
             XCTFail("Settings tab did not become hittable.\n\(app.debugDescription)")
             return
         }
@@ -50,9 +50,9 @@ final class MuseFleetUITests: XCTestCase {
 }
 
 @MainActor
-private func waitForHittableTab(_ label: String, in app: XCUIApplication,
+private func waitForHittableTab(_ identifier: String, label: String, in app: XCUIApplication,
                                timeout: TimeInterval) -> XCUIElement? {
-    let tabs = app.tabBars.buttons.matching(NSPredicate(format: "label == %@", label))
+    let tabs = app.tabBars.buttons.matching(NSPredicate(format: "identifier == %@ AND label == %@", identifier, label))
     let deadline = Date().addingTimeInterval(timeout)
     repeat {
         let hittable = tabs.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }

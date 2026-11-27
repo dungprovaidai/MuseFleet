@@ -32,6 +32,8 @@ python3 scripts/apple_pipeline.py test
 
 The script uses the currently selected Xcode locally. On Actions, `select-xcode` selects the newest usable preinstalled Xcode with an iOS 17+ SDK through `DEVELOPER_DIR`; it does not download Xcode or hardcode an installation name. Simulator selection uses available iPhone devices on an installed iOS 17+ runtime. Both hosted unit tests and UI tests run, with real build/test `.xcresult` bundles written under `artifacts`. No successful result is fabricated when a tool, runtime, test source, or build output is missing. Tests must use local fixtures and must not log into real Muse accounts or record credentials.
 
+Simulator builds use local ad hoc signing (`CODE_SIGN_IDENTITY=-`) so the hosted app can access the simulator Keychain. This uses no Apple certificate, provisioning profile or membership and does not change unsigned device packaging. A hosted XCTest creates, reads and deletes a unique test Keychain item; app-lock security remains enabled when the real Keychain preference or an access error requires it.
+
 ## Actions and cost authorization
 
 Every macOS job in `.github/workflows/ci.yml` and `.github/workflows/build-ipa.yml` requires the repository Actions variable `ALLOW_MACOS_ACTIONS` to equal the exact string `true`. Without it, push, pull request, tag, and manual dispatch jobs are skipped. The user approved public source; visibility was confirmed public and standard public Actions compute/storage policy was checked before the first manual run. See PROGRESS.md and TEST_REPORT.md for actual run links and conclusions. This does not authorize paid runners or other services.

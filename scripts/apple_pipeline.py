@@ -88,8 +88,9 @@ def test():
     run(["xcrun", "simctl", "bootstatus", simulator, "-b"], "Wait for simulator boot")
     (ROOT / "artifacts").mkdir(exist_ok=True)
     (ROOT / "artifacts/simulator.json").write_text(json.dumps({"udid": simulator, "name": selected["name"]}, indent=2) + "\n")
+    # Simulator Keychain access needs a local signature; no Apple identity or profile is used.
     base = project_arguments() + ["-destination", "platform=iOS Simulator,id=" + simulator,
-                                 "-derivedDataPath", "build/Simulator", "CODE_SIGNING_ALLOWED=NO"]
+                                 "-derivedDataPath", "build/Simulator", "CODE_SIGNING_ALLOWED=YES", "CODE_SIGN_IDENTITY=-"]
     run(base + ["-resolvePackageDependencies"], "Resolve package dependencies (none expected)")
     run(base + ["-resultBundlePath", "artifacts/Build.xcresult", "build-for-testing"], "Build application and unit/UI test bundles")
     run(base + ["-resultBundlePath", "artifacts/Tests.xcresult", "-parallel-testing-enabled", "NO",
