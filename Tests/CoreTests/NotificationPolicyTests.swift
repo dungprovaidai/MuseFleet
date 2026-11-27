@@ -5,12 +5,14 @@ import UserNotifications
 final class NotificationPolicyTests: XCTestCase {
     func testDeepLinkRejectsForeignOriginAndMalformedAccount() {
         let id = UUID()
-        let route = NotificationRoute.parse(["accountID": id.uuidString, "eventID": "fixture", "conversationURL": "https://muse.ai.evil.example/conversation/1"])
+        let eventID = id.uuidString + ":fixture"
+        let route = NotificationRoute.parse(["accountID": id.uuidString, "eventID": eventID, "conversationURL": "https://muse.ai.evil.example/conversation/1"])
         XCTAssertEqual(route?.accountID, id)
         XCTAssertNil(route?.url)
         XCTAssertNil(NotificationRoute.parse(["accountID": "not-a-uuid", "eventID": "fixture"]))
         XCTAssertNil(NotificationRoute.parse(["accountID": id.uuidString, "eventID": ""]))
-        let valid = NotificationRoute.parse(["accountID": id.uuidString, "eventID": "fixture", "conversationURL": "https://muse.ai/conversation/1"])
+        XCTAssertNil(NotificationRoute.parse(["accountID": id.uuidString, "eventID": UUID().uuidString + ":fixture"]))
+        let valid = NotificationRoute.parse(["accountID": id.uuidString, "eventID": eventID, "conversationURL": "https://muse.ai/conversation/1"])
         XCTAssertEqual(valid?.url?.host, "muse.ai")
     }
 

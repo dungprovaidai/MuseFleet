@@ -25,7 +25,7 @@ iOS không cho chạy WKWebView liên tục trong nền. Local notification có 
 
 ## Build và cài đặt
 
-Xem [BUILD_IPA.md](BUILD_IPA.md) cho Xcode/macOS, GitHub Actions, unsigned/signed IPA, secrets và checksum. IPA chưa ký không cài trực tiếp được trên iPhone thông thường. Không có Apple signing credentials trong repository.
+Xem [BUILD_IPA.md](BUILD_IPA.md) cho Xcode/macOS, GitHub Actions, unsigned/signed IPA, secrets và checksum, và [INSTALLATION.md](INSTALLATION.md) cho các bước ký/cài bằng công cụ Apple. IPA chưa ký không cài trực tiếp được trên iPhone thông thường. Không có Apple signing credentials trong repository.
 
 macOS Actions mặc định được chặn bằng repository variable để tránh chạy khi chưa xác nhận chi phí/hạn mức. GitHub Actions chỉ làm CI/build, không theo dõi Muse.
 

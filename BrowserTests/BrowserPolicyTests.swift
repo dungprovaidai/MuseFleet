@@ -28,9 +28,8 @@ final class BrowserPolicyTests: XCTestCase {
         XCTAssertFalse(BrowserNavigationPolicy.allowsBlobDownload(URL(string: "blob:null/fixture")!))
     }
 
-    func testVisitPersistenceOmitsQueryAndNeverStoresAuthenticationCallbacks() {
-        XCTAssertEqual(BrowserNavigationPolicy.visitURL(URL(string: "https://muse.ai/fixture?view=1"))?.absoluteString,
-                       "https://muse.ai/fixture")
+    func testVisitPersistenceRejectsQueriesAndAuthenticationCallbacks() {
+        XCTAssertNil(BrowserNavigationPolicy.visitURL(URL(string: "https://muse.ai/fixture?view=1")))
         XCTAssertNil(BrowserNavigationPolicy.visitURL(URL(string: "https://muse.ai/?code=fixture")))
         XCTAssertNil(BrowserNavigationPolicy.visitURL(URL(string: "https://muse.ai/#fixture")))
         XCTAssertNil(BrowserNavigationPolicy.visitURL(URL(string: "https://muse.ai/auth/callback/fixture")))

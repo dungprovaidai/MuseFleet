@@ -97,7 +97,8 @@ struct NotificationRoute: Equatable {
         guard let value = userInfo["accountID"] as? String,
               let accountID = UUID(uuidString: value),
               let eventID = userInfo["eventID"] as? String,
-              !eventID.isEmpty, eventID.utf8.count <= 512 else { return nil }
+              eventID.hasPrefix(accountID.uuidString + ":"), eventID.count > 37,
+              eventID.utf8.count <= 512 else { return nil }
         let candidate = (userInfo["conversationURL"] as? String).flatMap(URL.init(string:))
         return Self(accountID: accountID, url: URLPolicy.safeConversation(candidate), eventID: eventID)
     }
