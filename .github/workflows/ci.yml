@@ -1,0 +1,42 @@
+name: iOS CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' }}
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate pipeline scripts and project
+        run: |
+          python3 -m unittest discover -s Tests/Pipeline -v
+          python3 scripts/generate_project.py --check
+      - name: Select a preinstalled Xcode
+        run: python3 scripts/apple_pipeline.py select-xcode
+      - name: Resolve, build, and run unit and UI tests
+        run: python3 scripts/apple_pipeline.py test
+      - name: Upload actual build and test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MuseFleet-test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/*.xcresult
+            artifacts/simulator.json
+          if-no-files-found: warn
+          retention-days: 7
