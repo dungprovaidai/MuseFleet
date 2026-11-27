@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test:
-    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' }}
+    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' && (github.event_name == 'workflow_dispatch' || vars.ALLOW_AUTOMATIC_MACOS_ACTIONS == 'true') }}
     runs-on: macos-15
     timeout-minutes: 30
     steps:
@@ -38,5 +38,6 @@ jobs:
           path: |
             artifacts/*.xcresult
             artifacts/simulator.json
+            artifacts/screenshots/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1

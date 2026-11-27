@@ -4,7 +4,7 @@
 
 **Trạng thái phát triển, chưa đạt đầy đủ acceptance criteria.** Không có bằng chứng đăng nhập Muse trên WKWebView hoặc thông báo Muse thật khi app đóng. Không được hiểu bộ kiểm thử fixture, giao diện Inbox hoặc IPA chưa ký là bằng chứng các tính năng đó hoạt động. Xem [PROGRESS.md](PROGRESS.md), [RESEARCH.md](RESEARCH.md) và [TEST_REPORT.md](TEST_REPORT.md) để biết kết quả hiện tại.
 
-Repository: <https://github.com/dungprovaidai/MuseFleet> (private).
+Repository: <https://github.com/dungprovaidai/MuseFleet> (public theo lựa chọn người dùng để sử dụng standard GitHub Actions runners).
 
 ## Tính năng triển khai trong source
 

@@ -133,13 +133,14 @@ struct UnreadPill: View {
 }
 
 struct EventRow: View {
+    @Environment(FleetStore.self) private var store
     let event: FleetEvent
     let hidePreview: Bool
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             AccountAvatar(name: event.accountName, symbol: event.accountSymbol,
-                          colorHex: event.accountColorHex, size: 42)
+                          colorHex: event.accountColorHex, data: store.account(id: event.accountID)?.avatarData, size: 42)
                 .overlay(alignment: .bottomTrailing) {
                     if !event.isRead {
                         Circle().fill(FleetStyle.accent).frame(width: 10, height: 10)
@@ -185,12 +186,9 @@ struct SharePayload: Identifiable {
 @MainActor
 func openFleetEvent(_ event: FleetEvent, store: FleetStore, pool: BrowserPool,
                     navigation: NavigationState, notifications: NotificationCoordinator) {
+    guard let account = store.account(id: event.accountID) else { return }
+    pool.session(for: account).load(URLPolicy.safeConversation(event.conversationURL) ?? URLPolicy.home)
+    navigation.switchTo(account)
     store.markRead(event.id)
     notifications.clearDelivered(eventID: event.id)
-    notifications.syncBadge()
-    guard let account = store.account(id: event.accountID) else { return }
-    if let url = URLPolicy.safeConversation(event.conversationURL) {
-        pool.session(for: account).load(url)
-    }
-    navigation.switchTo(account)
 }

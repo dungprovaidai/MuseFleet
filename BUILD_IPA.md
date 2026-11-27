@@ -36,7 +36,7 @@ The script uses the currently selected Xcode locally. On Actions, `select-xcode`
 
 Every macOS job in `.github/workflows/ci.yml` and `.github/workflows/build-ipa.yml` requires the repository Actions variable `ALLOW_MACOS_ACTIONS` to equal the exact string `true`. Without it, push, pull request, tag, and manual dispatch jobs are skipped. Do not enable this variable, push a triggering tag, or dispatch a workflow until the owner authorizes runner usage. No workflow has been launched as part of this implementation.
 
-Both workflows use the standard `macos-15` runner with a 30-minute job limit, read-only repository permissions, and artifact retention of seven days. The CI workflow can run on main/master pushes, pull requests, and manual dispatch. The IPA workflow accepts manual dispatch or `v*` tags. A tag build is always unsigned; signed builds require the manual boolean input. Neither workflow creates a GitHub Release, publishes an app, or installs anything on a device.
+Both workflows use the standard `macos-15` runner with a 30-minute job limit, read-only repository permissions, and artifact retention of one day. The CI workflow supports main/master pushes, pull requests, and manual dispatch. The IPA workflow supports manual dispatch or `v*` tags. Automatic push/PR/tag builds also require `ALLOW_AUTOMATIC_MACOS_ACTIONS=true`; approval for a manual run does not enable ongoing automatic consumption. A tag build is always unsigned; signed builds require the manual boolean input. Neither workflow creates a GitHub Release, publishes an app, or installs anything on a device. Download artifacts promptly before they expire.
 
 Billing depends on current GitHub pricing, repository visibility, plan, account limits, and existing usage. The repository variable is an authorization gate, not proof that a run is free. No no-charge account status was established here.
 
@@ -52,7 +52,7 @@ The IPA artifact contains:
 - A `.sha256` file identifying the exact IPA bytes.
 - `build-metadata.json` recording bundle/version/build, arm64/iOS status, signature status, checksum, Xcode version, commit, and workflow run.
 
-Actual `.xcresult` files are uploaded with `always()` even after build/test failures when those files exist. This pipeline does not create mock screenshots or capture a user's screen. Simulator screenshots are optional and are not generated automatically.
+Actual `.xcresult` files are uploaded with `always()` even after build/test failures when those files exist. After successful simulator tests, `xcresulttool export attachments` exports actual test screenshots into the results artifact. These are simulator captures with test-created profile metadata, never screenshots of a logged-in user or proof of physical-device behavior. No screenshots are claimed until that command has run successfully.
 
 ## Signed IPA
 

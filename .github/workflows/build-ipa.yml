@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' }}
+    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' && (github.event_name == 'workflow_dispatch' || vars.ALLOW_AUTOMATIC_MACOS_ACTIONS == 'true') }}
     runs-on: macos-15
     timeout-minutes: 30
     env:
@@ -65,8 +65,9 @@ jobs:
           path: |
             artifacts/*.xcresult
             artifacts/simulator.json
+            artifacts/screenshots/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1
       - name: Upload validated IPA, checksum, and metadata
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
@@ -77,4 +78,4 @@ jobs:
             artifacts/*.sha256
             artifacts/build-metadata.json
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 1

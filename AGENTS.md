@@ -28,3 +28,9 @@ Work in the assigned branch/worktree. Do not edit another agent's files. Commit 
 ## Quality gates
 
 Use XCTest for data persistence, routing, deduplication, quiet hours and WKWebsiteDataStore isolation with a local fixture. Website-specific observer selectors remain unavailable until verified against actual Muse markup. Synthetic fixtures prove only fixture behavior. Do not claim 24/7 monitoring, background WebView polling, official Muse webhooks or APNs delivery without evidence. No relay deployment or costs without user permission. No screenshots or login details in logs. IPA must contain an actual arm64 Mach-O application binary; never create a placeholder IPA.
+
+## Verified environment and current release blockers
+
+Lead created https://github.com/dungprovaidai/MuseFleet and pushed source. The user explicitly approved making source PUBLIC to use standard public GitHub Actions runners; repository visibility is now public. GitHub CLI is authenticated; current OAuth scopes cannot read account billing usage. Standard public runner execution is authorized only under documented no-charge compute/storage conditions. No paid runner, relay or Apple membership is authorized. Automatic runs remain disabled unless separately enabled; manual builds do not authorize ongoing consumption.
+
+Research is in RESEARCH.md and research_notes/. Muse's public initial login form is verified; authenticated login, conversation URL patterns and event DOM are not. Keep the production site adapter unavailable until an authorized real login yields rendered UI evidence. The official Muse app's iOS18 minimum does not establish website compatibility on iOS17. Any synthetic fixture URLs/selectors are tests, not Muse contracts.

@@ -65,7 +65,8 @@ class PipelineTests(unittest.TestCase):
             blocks = re.split(r"(?m)^  [A-Za-z0-9_-]+:\n", jobs)[1:]
             self.assertTrue(blocks)
             for block in blocks:
-                self.assertIn("if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' }}", block)
+                self.assertIn("vars.ALLOW_MACOS_ACTIONS == 'true'", block)
+                self.assertIn("github.event_name == 'workflow_dispatch' || vars.ALLOW_AUTOMATIC_MACOS_ACTIONS == 'true'", block)
                 self.assertIn("runs-on: macos-15", block)
                 self.assertIn("timeout-minutes: 30", block)
             self.assertIn("contents: read", text)

@@ -10,12 +10,12 @@
 |---|---|---|
 | 0 Research | DOCUMENTATION COMPLETE; runtime gates open | Official Muse home/form fetched; iOS17 identified stores documented; Muse embedded login and authenticated event DOM unverified |
 | 1 Isolation and notification PoCs | TEST SOURCE IN PROGRESS; runtime BLOCKED | Apple execution environment and real Muse login required |
-| 2 Core browser | IN PROGRESS (isolated branch) | Per-UUID persistent data stores, lifecycle and downloads |
+| 2 Core browser | SOURCE INTEGRATED; Apple runtime pending | Per-UUID stores, max3 LRU, popup/download/navigation, strict observer boundary |
 | 3 Notifications | CORE IMPLEMENTED; Muse source BLOCKED | Local persistence/routing/dedup/quiet hours implemented; no real event source verified |
-| 4 Native UI | IN PROGRESS (isolated branch) | Home, Accounts, Inbox, Settings; original icon generated |
+| 4 Native UI | SOURCE INTEGRATED; Apple runtime pending | Home, Accounts, Inbox, Settings; original icon generated; no demo accounts seeded |
 | 5 Background delivery | BLOCKED | No verified upstream event source or APNs credentials |
 | 6 Security and QA | IN PROGRESS | App lock, URL policy, privacy, atomic storage and unit test source; no Apple runtime execution |
-| 7 GitHub and IPA | REPO CREATED; build BLOCKED | Private https://github.com/dungprovaidai/MuseFleet; billing usage requires missing user scope, no macOS execution yet |
+| 7 GitHub and IPA | PIPELINE INTEGRATED; public build preparation | User approved source public; visibility changed; 21 Python and 9 Node tests passed; 31 Swift files syntax-parsed |
 | 8 Delivery | PENDING | Requires real artifact and honest test evidence |
 
 Never treat a written test, simulator-only check or packaged placeholder as a verified production feature.
@@ -32,7 +32,7 @@ Never treat a written test, simulator-only check or packaged placeholder as a ve
 
 ## Current blockers
 
-1. MacOS Actions costs/quota cannot be verified with the current token; the user forbids unapproved charges. Workflows will be disabled by default until a concrete run is approved or no-charge budget conditions verified.
+1. User approved making source public for standard free runners. Verify public Actions storage policy, then run manual build/test; no paid services authorized. Automatic run variable remains disabled.
 2. No physical iPhone or browser MCP; user-controlled Muse login and two-account live isolation are not tested.
 3. No verified authenticated Muse DOM or official event upstream; real response notifications and background/locked/force-quit delivery remain incomplete.
 4. No Apple signing credentials; signed IPA and APNs are unavailable. A real unsigned arm64 IPA still requires an Apple build runner.

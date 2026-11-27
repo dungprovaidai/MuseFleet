@@ -37,11 +37,14 @@ struct MuseFleetApp: App {
                         .zIndex(100)
                 }
             }
+            .background(PrivacyShield(isPresented: appLock.isLocked || scenePhase != .active,
+                                      content: AnyView(privacyCurtain)))
             .preferredColorScheme(store.settings.appearance == "dark" ? .dark : store.settings.appearance == "light" ? .light : nil)
             .task {
                 await notifications.refreshAuthorization()
+                guard scenePhase == .active else { return }
                 await appLock.unlock(enabled: KeychainLock.enabled())
-                if !appLock.isLocked { browsers.resumeAll(); consumeNotificationRoute() }
+                if scenePhase == .active && !appLock.isLocked { browsers.resumeAll(); consumeNotificationRoute() }
             }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .background {
@@ -51,8 +54,9 @@ struct MuseFleetApp: App {
                 } else if phase == .active {
                     Task {
                         await notifications.refreshAuthorization()
+                        guard scenePhase == .active else { return }
                         await appLock.unlock(enabled: KeychainLock.enabled())
-                        if !appLock.isLocked { browsers.resumeAll(); consumeNotificationRoute() }
+                        if scenePhase == .active && !appLock.isLocked { browsers.resumeAll(); consumeNotificationRoute() }
                     }
                 } else {
                     browsers.suspendAll()
@@ -60,11 +64,7 @@ struct MuseFleetApp: App {
             }
             .onChange(of: notifications.pendingRoute) { _, _ in consumeNotificationRoute() }
             .onChange(of: appLock.isLocked) { _, locked in
-                if !locked { browsers.resumeAll(); consumeNotificationRoute() }
-            }
-            .onChange(of: store.settings.appLockEnabled) { _, enabled in
-                guard enabled != KeychainLock.enabled() else { return }
-                Task { await appLock.confirmSettingChange(enabled: enabled, store: store) }
+                if !locked && scenePhase == .active { browsers.resumeAll(); consumeNotificationRoute() }
             }
             .onChange(of: store.settings.hideNotificationPreviews) { _, _ in notifications.applyPrivacySettings() }
             .onChange(of: store.events) { _, _ in notifications.syncBadge() }

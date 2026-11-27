@@ -44,6 +44,43 @@ final class NotificationPolicyTests: XCTestCase {
 
 @MainActor
 final class NotificationCoordinatorTests: XCTestCase {
+    func testEnablingPrivacyBeforeQueuedSubmissionNeverSubmitsOldPreview() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = FleetStore(directory: directory)
+        let account = AccountProfile(name: "Private fixture")
+        store.addAccount(account)
+        store.settings.hideNotificationPreviews = false
+        store.settings.hapticsEnabled = false
+        let staleSubmission = expectation(description: "A stale private request is never submitted")
+        staleSubmission.isInverted = true
+        let coordinator = NotificationCoordinator(store: store, deliver: { _ in staleSubmission.fulfill() })
+        coordinator.authorizationStatus = .authorized
+        coordinator.receive(accountID: account.id, type: .response, preview: "Private test content",
+                            conversationURL: nil, eventID: "privacy-race")
+        // Change the setting synchronously before SwiftUI's onChange can invalidate tasks.
+        store.settings.hideNotificationPreviews = true
+        await fulfillment(of: [staleSubmission], timeout: 0.2)
+        XCTAssertEqual(store.events.count, 1)
+    }
+
+    func testDeletingAccountBeforeQueuedSubmissionNeverSubmitsAlert() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = FleetStore(directory: directory)
+        let account = AccountProfile(name: "Deleted fixture")
+        store.addAccount(account)
+        store.settings.hapticsEnabled = false
+        let staleSubmission = expectation(description: "A deleted account never submits an alert")
+        staleSubmission.isInverted = true
+        let coordinator = NotificationCoordinator(store: store, deliver: { _ in staleSubmission.fulfill() })
+        coordinator.authorizationStatus = .authorized
+        coordinator.receive(accountID: account.id, type: .response, preview: nil, conversationURL: nil, eventID: "deleted-race")
+        store.deleteAccountMetadata(id: account.id)
+        await fulfillment(of: [staleSubmission], timeout: 0.2)
+        XCTAssertTrue(store.events.isEmpty)
+    }
+
     func testDeniedPermissionStillRecordsOneEventAndHidesPreview() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

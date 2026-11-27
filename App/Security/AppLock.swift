@@ -42,6 +42,7 @@ enum KeychainLock {
 final class AppLock {
     private(set) var isLocked = true
     private(set) var isAuthenticating = false
+    private(set) var isChangingSetting = false
     var errorMessage: String?
     @ObservationIgnored private var context: LAContext?
     @ObservationIgnored private var lockGeneration = 0
@@ -55,6 +56,7 @@ final class AppLock {
 
     func unlock(enabled: Bool) async {
         guard enabled else { isLocked = false; return }
+        guard isLocked else { return }
         guard !isAuthenticating else { return }
         isAuthenticating = true
         errorMessage = nil
@@ -73,6 +75,9 @@ final class AppLock {
     }
 
     func confirmSettingChange(enabled: Bool, store: FleetStore) async {
+        guard !isChangingSetting else { return }
+        isChangingSetting = true
+        defer { isChangingSetting = false }
         let authentication = LAContext()
         let generation = lockGeneration
         do {

@@ -6,6 +6,7 @@ import UIKit
 struct SettingsView: View {
     @Environment(FleetStore.self) private var store
     @Environment(NotificationCoordinator.self) private var notifications
+    @Environment(AppLock.self) private var appLock
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
     @State private var requestingPermission = false
@@ -87,8 +88,13 @@ struct SettingsView: View {
 
                 Section {
                     Toggle("Hide message previews", isOn: setting(\.hideNotificationPreviews))
-                    Toggle("Require device authentication", isOn: setting(\.appLockEnabled))
+                    Toggle("Require device authentication", isOn: Binding(
+                        get: { store.settings.appLockEnabled },
+                        set: { enabled in Task { await appLock.confirmSettingChange(enabled: enabled, store: store) } }
+                    ))
                         .accessibilityIdentifier("settings.appLock")
+                        .disabled(appLock.isChangingSetting)
+                    if appLock.isChangingSetting { ProgressView("Waiting for authentication…") }
                 } header: {
                     Text("Privacy & access")
                 } footer: {
@@ -119,7 +125,6 @@ struct SettingsView: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await notifications.refreshAuthorization() } }
             }
-            .onChange(of: store.settings.hideNotificationPreviews) { _, _ in notifications.applyPrivacySettings() }
         }
     }
 

@@ -8,12 +8,15 @@ Date: 2026-11-28. Environment: Windows; Python, Node, Git and authenticated GitH
 |---|---|---|
 | Official Muse home/login form | VERIFIED public HTTP response | Research notes; no credentials submitted |
 | Original app icon | PASS local generator check | 1024×1024 RGB PNG, no alpha |
+| IPA pipeline Python tests | PASS, 21 tests on Windows | ZIP/Mach-O/plist rejection fixtures, signing orchestration mocks, input validation, project generation and cost guards; no Apple binaries built |
+| Observer JavaScript tests | PASS, 9 Node tests on Windows | Synthetic fixture only: baseline history, explicit lifecycle, no per-token emissions, origin/frame rejection, resume and malformed adapter handling |
+| Swift syntax | PASS, tree-sitter parse of 31 files | Syntax only; cannot resolve Apple APIs, actor isolation or types |
 | Core Swift tests | WRITTEN, NOT RUN | Persistence, deletion, deduplication, denial, safe routes, quiet hours, corruption preservation |
 | WebKit isolation PoC | PENDING Apple execution | Uses synthetic local website state, not live Muse accounts |
 | Foreground notification observer PoC | PENDING fixture execution | Does not establish production Muse selectors |
 | Local notification scheduling PoC | WRITTEN, NOT RUN | Requires granted system permission; otherwise explicit skip |
 | XCUITest UI smoke | WRITTEN, NOT RUN | Tabs, profile creation, restart persistence, simulator screenshot attachment |
-| iOS build / archive / IPA | NOT RUN | macOS runner cost authorization needed |
+| iOS build / archive / IPA | NOT RUN | User approved public source; preparing standard public Actions run after storage-policy check |
 | Two real Muse accounts | BLOCKED | User-controlled iPhone login needed |
 | Background / locked / force quit delivery | BLOCKED | No verified production event source, Apple device or APNs setup |
 | Signed IPA / remote push | BLOCKED | No supplied signing credentials or upstream source |
@@ -43,3 +46,7 @@ Record device model, iOS version, build SHA, installation method and signing met
 ## Required delivery evidence
 
 A successful macOS Actions URL, exact commit, xcresult artifacts, actual simulator screenshot files, IPA validation JSON, SHA-256 and signing status must be added after execution. Physical-device results remain separate. No current entry claims those artifacts exist.
+
+## Source review corrections
+
+Review found authentication re-entry after interruptions, a stale activation task resuming browser work after backgrounding, missing foreground sound presentation and pending-notification privacy races. Source now guards an already-unlocked session, rejects stale authentication generations, rechecks active scene state after awaits, honors sound settings, invalidates pending delivery tasks and rejects stale private foreground presentation. A separate privacy window covers native modal presentation; its snapshot/VoiceOver behavior still requires physical-device verification. App-lock changes now authenticate before updating the saved preference.

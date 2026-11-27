@@ -95,6 +95,8 @@ def test():
     run(base + ["-resultBundlePath", "artifacts/Tests.xcresult", "-parallel-testing-enabled", "NO",
                 "-maximum-concurrent-test-simulator-destinations", "1", "-test-timeouts-enabled", "YES",
                 "-maximum-test-execution-time-allowance", "180", "test-without-building"], "Run hosted unit and UI tests")
+    run(["xcrun", "xcresulttool", "export", "attachments", "--path", "artifacts/Tests.xcresult",
+         "--output-path", "artifacts/screenshots"], "Export actual simulator test attachments")
 
 
 def build_version(environment):
