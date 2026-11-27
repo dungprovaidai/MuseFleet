@@ -33,6 +33,7 @@ def secure_run(arguments, stage):
 
 
 def validate_profile(profile, team, now=None):
+    """Check metadata only; this does not authenticate the profile's signer."""
     require(isinstance(profile, dict), "Provisioning profile must be a dictionary")
     require(isinstance(team, str) and re.fullmatch(r"[A-Z0-9]{10}", team), "Invalid Apple team identifier")
     require(profile.get("TeamIdentifier") == [team], "Provisioning profile team mismatch")
@@ -48,7 +49,10 @@ def validate_profile(profile, team, now=None):
     require(created <= now < expires, "Provisioning profile is expired or not yet valid")
     entitlements = profile.get("Entitlements")
     require(isinstance(entitlements, dict), "Provisioning profile has no entitlements")
-    require(entitlements.get("application-identifier") == team + "." + BUNDLE_ID,
+    prefixes = profile.get("ApplicationIdentifierPrefix")
+    require(isinstance(prefixes, list) and prefixes and all(isinstance(prefix, str) and
+            re.fullmatch(r"[A-Z0-9]{10}", prefix) for prefix in prefixes), "Invalid App ID prefix list")
+    require(entitlements.get("application-identifier") in [prefix + "." + BUNDLE_ID for prefix in prefixes],
             "An explicit provisioning profile matching the MuseFleet bundle is required")
     require(entitlements.get("com.apple.developer.team-identifier") == team, "Entitlement team mismatch")
     require(type(entitlements.get("get-task-allow", False)) is bool, "Invalid debugging entitlement")
@@ -78,9 +82,17 @@ def validate_profile(profile, team, now=None):
 
 
 def decode_profile(path):
-    data = secure_run(["/usr/bin/openssl", "smime", "-verify", "-inform", "DER", "-noverify", "-in", str(path)],
-                      "decode provisioning profile")
-    return load_plist(data)
+    """Return authenticated Apple profile contents; currently unavailable, fail closed.
+
+    TN3125 documents CMS unpacking for inspection, not profile signer authorization:
+    https://developer.apple.com/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles
+    The documented Security policies do not establish the required signer policy:
+    https://developer.apple.com/documentation/security/standard-policies-for-specific-certificate-types
+    OpenSSL -noverify checks content integrity without authorizing an Apple signer.
+    A generic Apple developer certificate chain does not grant profile signing authority.
+    """
+    raise ValueError("Signed mode blocked: Apple-issued provisioning profile signer authorization is not implemented. "
+                     "No supported public verification policy has been established; use unsigned mode.")
 
 
 def profile_directory():
@@ -99,7 +111,8 @@ def verify_signed_app(bundle):
     team = entitlements.get("com.apple.developer.team-identifier")
     profile = decode_profile(bundle / "embedded.mobileprovision")
     validated = validate_profile(profile, team)
-    require(entitlements.get("application-identifier") == team + "." + BUNDLE_ID, "Signed bundle entitlement mismatch")
+    require(entitlements.get("application-identifier") == profile["Entitlements"]["application-identifier"],
+            "Signed bundle entitlement mismatch")
     require(entitlements.get("aps-environment") == validated["aps_environment"], "Signed APNs entitlement mismatch")
     require(entitlements.get("get-task-allow", False) == profile["Entitlements"].get("get-task-allow", False),
             "Signed debugging entitlement mismatch")
@@ -115,7 +128,7 @@ def verify_signed_app(bundle):
     import tempfile
     with tempfile.TemporaryDirectory(prefix="musefleet-cert-") as temporary:
         prefix = str(Path(temporary) / "certificate")
-        secure_run(["codesign", "--display", "--extract-certificates", prefix, str(bundle)], "read signing certificate")
+        secure_run(["codesign", "--display", "--extract-certificates=" + prefix, str(bundle)], "read signing certificate")
         certificate = Path(prefix + "0").read_bytes()
         require(hashlib.sha1(certificate).hexdigest().upper() in validated["certificate_hashes"],
                 "Signing certificate is not authorized by the embedded profile")
@@ -141,9 +154,9 @@ def setup(directory):
             "Invalid signing secret size")
     p12 = directory / "certificate.p12"
     profile_path = directory / "profile.mobileprovision"
-    write_private(p12, certificate)
     write_private(profile_path, mobileprofile)
     profile = validate_profile(decode_profile(profile_path), os.environ["APPLE_TEAM_ID"])
+    write_private(p12, certificate)
     installed = profile_directory() / (profile["uuid"] + ".mobileprovision")
     require(not installed.exists(), "Refusing to replace an existing provisioning profile")
     original_keychains = shlex.split(secure_run(["security", "list-keychains", "-d", "user"], "read keychain list").decode())
