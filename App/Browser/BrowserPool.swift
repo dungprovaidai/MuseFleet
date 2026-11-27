@@ -14,7 +14,7 @@ final class BrowserPool {
     @ObservationIgnored private var memoryWarningObserver: NSObjectProtocol?
 
     init(store: FleetStore, notifications: NotificationCoordinator,
-         removeWebsiteData: @escaping @MainActor (UUID) async throws -> Void = { try await WKWebsiteDataStore.remove(forIdentifier: $0) }) {
+         removeWebsiteData: @escaping @MainActor (UUID) async throws -> Void = { try await WebsiteDataStoreRemoval.remove(forIdentifier: $0) }) {
         self.store = store
         self.notifications = notifications
         self.removeWebsiteData = removeWebsiteData
@@ -85,4 +85,24 @@ enum BrowserDataError: LocalizedError {
     case alreadyClearing
 
     var errorDescription: String? { "Website data for this account is already being cleared." }
+}
+
+@MainActor
+enum WebsiteDataStoreRemoval {
+    static func remove(forIdentifier id: UUID,
+                       operation: @MainActor (UUID) async throws -> Void = {
+                           try await WKWebsiteDataStore.remove(forIdentifier: $0)
+                       }) async throws {
+        for delay in [100, 250, 500, 1_000] {
+            do {
+                try await operation(id)
+                return
+            } catch {
+                let failure = error as NSError
+                guard failure.domain == "WKWebSiteDataStore", failure.code == 1 else { throw error }
+                try await Task.sleep(for: .milliseconds(Int64(delay)))
+            }
+        }
+        try await operation(id)
+    }
 }

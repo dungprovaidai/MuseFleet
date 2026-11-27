@@ -44,7 +44,7 @@ final class BrowserObserverFixtureTests: XCTestCase {
         try await page.evaluate("0;", isolated: true)
         XCTAssertEqual(page.messages.filter { $0.kind == "completed" }.count, 1)
         page.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: id)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: id)
     }
 
     @MainActor
@@ -77,7 +77,7 @@ final class BrowserObserverFixtureTests: XCTestCase {
         XCTAssertEqual(page.messages.filter { $0.kind == "completed" }.count, 1)
         XCTAssertNil(BrowserObserverAdapter.muse, "The synthetic adapter cannot enable production Muse detection.")
         page.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: id)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: id)
     }
 
     @MainActor
@@ -89,7 +89,7 @@ final class BrowserObserverFixtureTests: XCTestCase {
         let visible = try await page.evaluate("Boolean(globalThis.webkit?.messageHandlers?.museFleetObserver)") as? Bool
         XCTAssertEqual(visible, false)
         page.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: id)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: id)
     }
 
     @MainActor
@@ -125,6 +125,6 @@ final class BrowserObserverFixtureTests: XCTestCase {
         XCTAssertNotEqual(eventID, adapter.eventID(itemID: payload.itemID!,
             conversationURL: URL(string: adapter.origin + "/another-conversation")!))
         page.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: account.id)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: account.id)
     }
 }

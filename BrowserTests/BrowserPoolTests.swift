@@ -36,7 +36,7 @@ final class BrowserPoolTests: XCTestCase {
         XCTAssertEqual(provider.source, .foregroundWeb)
         XCTAssertEqual(provider.capability.level, .blocked)
         pool.keepOnly(accountID: nil)
-        for account in accounts { try await WKWebsiteDataStore.remove(forIdentifier: account.id) }
+        for account in accounts { try await WebsiteDataStoreRemoval.remove(forIdentifier: account.id) }
     }
 
     @MainActor
@@ -77,7 +77,7 @@ final class BrowserPoolTests: XCTestCase {
         XCTAssertFalse(pool.isClearingWebsiteData(accountID: account.id))
         XCTAssertTrue(blocked.isAvailable)
         pool.keepOnly(accountID: nil)
-        try await WKWebsiteDataStore.remove(forIdentifier: account.id)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: account.id)
     }
 
     @MainActor
@@ -102,5 +102,20 @@ final class BrowserPoolTests: XCTestCase {
         XCTAssertNil(saved.lastVisitedAt)
         let identifiers = await WKWebsiteDataStore.allDataStoreIdentifiers
         XCTAssertFalse(identifiers.contains(account.id))
+    }
+
+    @MainActor
+    func testWebsiteStoreRemovalRetriesOnlyTheInUseError() async throws {
+        let id = UUID()
+        var attempts = 0
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: id) { receivedID in
+            XCTAssertEqual(receivedID, id)
+            attempts += 1
+            if attempts == 1 {
+                throw NSError(domain: "WKWebSiteDataStore", code: 1,
+                              userInfo: [NSLocalizedDescriptionKey: "Data store is in use"])
+            }
+        }
+        XCTAssertEqual(attempts, 2)
     }
 }

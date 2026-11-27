@@ -39,7 +39,7 @@ final class WebsiteDataStoreFixtureTests: XCTestCase {
         XCTAssertEqual(persistedFirst, true)
         XCTAssertEqual(persistedSecond, true)
         reopenedFirst.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: firstID)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: firstID)
         let identifiersAfterDeletion = await WKWebsiteDataStore.allDataStoreIdentifiers
         XCTAssertFalse(identifiersAfterDeletion.contains(firstID))
         XCTAssertTrue(identifiersAfterDeletion.contains(secondID))
@@ -52,7 +52,7 @@ final class WebsiteDataStoreFixtureTests: XCTestCase {
         XCTAssertEqual(untouched, true)
         freshFirst.close()
         reopenedSecond.close()
-        try await WKWebsiteDataStore.remove(forIdentifier: firstID)
-        try await WKWebsiteDataStore.remove(forIdentifier: secondID)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: firstID)
+        try await WebsiteDataStoreRemoval.remove(forIdentifier: secondID)
     }
 }
