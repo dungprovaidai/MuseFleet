@@ -43,6 +43,12 @@ jobs:
         run: python3 scripts/apple_pipeline.py select-xcode
       - name: Resolve, build, and run unit and UI tests
         run: python3 scripts/apple_pipeline.py test
+      - name: Export failed simulator test attachments
+        if: ${{ failure() }}
+        run: |
+          if [ -d artifacts/Tests.xcresult ]; then
+            xcrun xcresulttool export attachments --path artifacts/Tests.xcresult --output-path artifacts/screenshots
+          fi
       - name: Prepare validated signing credentials
         if: ${{ env.INPUT_SIGNED == 'true' }}
         env:

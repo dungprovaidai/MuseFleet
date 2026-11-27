@@ -1,12 +1,14 @@
 import XCTest
 
+@MainActor
 final class MuseFleetUITests: XCTestCase {
     func testFourTabsAndAccountCreationPersistAfterRelaunch() {
         let app = XCUIApplication()
         app.launch()
-        let accountTab = app.tabBars.buttons.matching(identifier: "tab.accounts")
-            .matching(NSPredicate(format: "isHittable == true")).firstMatch
-        XCTAssertTrue(accountTab.waitForExistence(timeout: 20), app.debugDescription)
+        guard let accountTab = waitForHittableTab("Accounts", in: app, timeout: 20) else {
+            XCTFail("Accounts tab did not become hittable.\n\(app.debugDescription)")
+            return
+        }
         accountTab.tap()
         let addButton = app.buttons["account.add"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 5))
@@ -22,17 +24,22 @@ final class MuseFleetUITests: XCTestCase {
         if close.waitForExistence(timeout: 3) { close.tap() }
         app.terminate()
         app.launch()
-        XCTAssertTrue(accountTab.waitForExistence(timeout: 20), app.debugDescription)
-        accountTab.tap()
+        guard let relaunchedAccountTab = waitForHittableTab("Accounts", in: app, timeout: 20) else {
+            XCTFail("Accounts tab did not become hittable after relaunch.\n\(app.debugDescription)")
+            return
+        }
+        relaunchedAccountTab.tap()
         XCTAssertTrue(app.staticTexts[fixture].waitForExistence(timeout: 5))
-        let inboxTab = app.tabBars.buttons.matching(identifier: "tab.inbox")
-            .matching(NSPredicate(format: "isHittable == true")).firstMatch
-        XCTAssertTrue(inboxTab.waitForExistence(timeout: 10), app.debugDescription)
+        guard let inboxTab = waitForHittableTab("Inbox", in: app, timeout: 10) else {
+            XCTFail("Inbox tab did not become hittable.\n\(app.debugDescription)")
+            return
+        }
         inboxTab.tap()
         XCTAssertTrue(app.navigationBars["Inbox"].exists)
-        let settingsTab = app.tabBars.buttons.matching(identifier: "tab.settings")
-            .matching(NSPredicate(format: "isHittable == true")).firstMatch
-        XCTAssertTrue(settingsTab.waitForExistence(timeout: 10), app.debugDescription)
+        guard let settingsTab = waitForHittableTab("Settings", in: app, timeout: 10) else {
+            XCTFail("Settings tab did not become hittable.\n\(app.debugDescription)")
+            return
+        }
         settingsTab.tap()
         XCTAssertTrue(app.navigationBars["Settings"].exists)
         let attachment = XCTAttachment(screenshot: app.screenshot())
@@ -40,4 +47,17 @@ final class MuseFleetUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+}
+
+@MainActor
+private func waitForHittableTab(_ label: String, in app: XCUIApplication,
+                               timeout: TimeInterval) -> XCUIElement? {
+    let tabs = app.tabBars.buttons.matching(NSPredicate(format: "label == %@", label))
+    let deadline = Date().addingTimeInterval(timeout)
+    repeat {
+        let hittable = tabs.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }
+        if hittable.count == 1 { return hittable[0] }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+    } while Date() < deadline
+    return nil
 }
