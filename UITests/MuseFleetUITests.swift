@@ -4,11 +4,9 @@ final class MuseFleetUITests: XCTestCase {
     func testFourTabsAndAccountCreationPersistAfterRelaunch() {
         let app = XCUIApplication()
         app.launch()
-        let tabBar = app.tabBars.element(boundBy: 0)
-        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
-        let accountTab = tabBar.buttons["tab.accounts"]
-        XCTAssertTrue(accountTab.waitForExistence(timeout: 10))
-        XCTAssertTrue(accountTab.isHittable)
+        let accountTab = app.tabBars.buttons.matching(identifier: "tab.accounts")
+            .matching(NSPredicate(format: "isHittable == true")).firstMatch
+        XCTAssertTrue(accountTab.waitForExistence(timeout: 20), app.debugDescription)
         accountTab.tap()
         let addButton = app.buttons["account.add"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 5))
@@ -24,11 +22,18 @@ final class MuseFleetUITests: XCTestCase {
         if close.waitForExistence(timeout: 3) { close.tap() }
         app.terminate()
         app.launch()
+        XCTAssertTrue(accountTab.waitForExistence(timeout: 20), app.debugDescription)
         accountTab.tap()
         XCTAssertTrue(app.staticTexts[fixture].waitForExistence(timeout: 5))
-        tabBar.buttons["tab.inbox"].tap()
+        let inboxTab = app.tabBars.buttons.matching(identifier: "tab.inbox")
+            .matching(NSPredicate(format: "isHittable == true")).firstMatch
+        XCTAssertTrue(inboxTab.waitForExistence(timeout: 10), app.debugDescription)
+        inboxTab.tap()
         XCTAssertTrue(app.navigationBars["Inbox"].exists)
-        tabBar.buttons["tab.settings"].tap()
+        let settingsTab = app.tabBars.buttons.matching(identifier: "tab.settings")
+            .matching(NSPredicate(format: "isHittable == true")).firstMatch
+        XCTAssertTrue(settingsTab.waitForExistence(timeout: 10), app.debugDescription)
+        settingsTab.tap()
         XCTAssertTrue(app.navigationBars["Settings"].exists)
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "MuseFleet simulator Settings"
