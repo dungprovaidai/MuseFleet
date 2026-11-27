@@ -106,9 +106,10 @@ final class BrowserPoolTests: XCTestCase {
 
     @MainActor
     func testWebsiteStoreRemovalRetriesOnlyTheInUseError() async throws {
+        enum FixtureFailure: Error { case denied }
         let id = UUID()
         var attempts = 0
-        try await WebsiteDataStoreRemoval.remove(forIdentifier: id) { receivedID in
+        try await WebsiteDataStoreRemoval.removeStore(forIdentifier: id) { receivedID in
             XCTAssertEqual(receivedID, id)
             attempts += 1
             if attempts == 1 {
@@ -117,5 +118,15 @@ final class BrowserPoolTests: XCTestCase {
             }
         }
         XCTAssertEqual(attempts, 2)
+
+        var permanentAttempts = 0
+        do {
+            try await WebsiteDataStoreRemoval.removeStore(forIdentifier: UUID()) { _ in
+                permanentAttempts += 1
+                throw FixtureFailure.denied
+            }
+            XCTFail("Unrelated removal errors must not be retried")
+        } catch FixtureFailure.denied { }
+        XCTAssertEqual(permanentAttempts, 1)
     }
 }

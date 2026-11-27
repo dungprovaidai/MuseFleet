@@ -4,8 +4,11 @@ final class MuseFleetUITests: XCTestCase {
     func testFourTabsAndAccountCreationPersistAfterRelaunch() {
         let app = XCUIApplication()
         app.launch()
-        let accountTab = app.tabBars.buttons["tab.accounts"]
+        let tabBar = app.tabBars.element(boundBy: 0)
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
+        let accountTab = tabBar.buttons["tab.accounts"]
         XCTAssertTrue(accountTab.waitForExistence(timeout: 10))
+        XCTAssertTrue(accountTab.isHittable)
         accountTab.tap()
         let addButton = app.buttons["account.add"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 5))
@@ -23,9 +26,9 @@ final class MuseFleetUITests: XCTestCase {
         app.launch()
         accountTab.tap()
         XCTAssertTrue(app.staticTexts[fixture].waitForExistence(timeout: 5))
-        app.tabBars.buttons["tab.inbox"].tap()
+        tabBar.buttons["tab.inbox"].tap()
         XCTAssertTrue(app.navigationBars["Inbox"].exists)
-        app.tabBars.buttons["tab.settings"].tap()
+        tabBar.buttons["tab.settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].exists)
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "MuseFleet simulator Settings"

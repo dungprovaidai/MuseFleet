@@ -89,10 +89,20 @@ enum BrowserDataError: LocalizedError {
 
 @MainActor
 enum WebsiteDataStoreRemoval {
-    static func remove(forIdentifier id: UUID,
-                       operation: @MainActor (UUID) async throws -> Void = {
-                           try await WKWebsiteDataStore.remove(forIdentifier: $0)
-                       }) async throws {
+    static func remove(forIdentifier id: UUID) async throws {
+        await clearData(forIdentifier: id)
+        try await removeStore(forIdentifier: id)
+    }
+
+    private static func clearData(forIdentifier id: UUID) async {
+        let store = WKWebsiteDataStore(forIdentifier: id)
+        await store.removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast)
+    }
+
+    static func removeStore(forIdentifier id: UUID,
+                            operation: @MainActor (UUID) async throws -> Void = {
+                                try await WKWebsiteDataStore.remove(forIdentifier: $0)
+                            }) async throws {
         for delay in [100, 250, 500, 1_000] {
             do {
                 try await operation(id)
