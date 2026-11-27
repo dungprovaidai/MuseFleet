@@ -56,6 +56,8 @@ Actual `.xcresult` files are uploaded with `always()` even after build/test fail
 
 ## Signed IPA
 
+**BLOCKED:** signed mode currently fails closed before importing private keys because a public, documented Apple provisioning-profile signer authorization check has not been established in this validator. CMS integrity alone does not prove Apple issued a profile. No signed IPA or signed installation is claimed; supplying secrets alone does not close this gate. Unsigned mode is independent and remains available. The steps below describe the implemented signing orchestration and its required future validation, not an enabled release path.
+
 The owner supplies these repository Actions secrets; never commit their values or paste them into logs:
 
 | Secret | Value |
@@ -68,7 +70,7 @@ The owner supplies these repository Actions secrets; never commit their values o
 
 For base64 input, use a single line without surrounding whitespace. Do not reuse a personal login-keychain password. Creation of certificates, profiles, secrets, or an Apple developer membership is outside the workflow.
 
-After authorizing Actions costs and supplying credentials, manually dispatch **Build IPA** with `signed=true`. Setup decodes and verifies the profile's CMS signature with the system `/usr/bin/openssl` without importing its certificates into a user keychain. It checks the exact application identifier and team, validity dates, iOS platform, device/distribution settings, and APNs environment. It imports the `.p12` into a private temporary keychain and requires a valid signing identity whose certificate is authorized by the profile. The profile is installed in Xcode 16+'s `~/Library/Developer/Xcode/UserData/Provisioning Profiles` location (or the legacy location for an older selected Xcode). An existing profile with the same UUID is never overwritten. The password and base64 values are never printed.
+After the signer-authorization gate is resolved, authorized signed orchestration validates the explicit App ID using `ApplicationIdentifierPrefix` (which may differ from Team ID), checks the team separately, validates dates, iOS platform, distribution and APNs environment, and requires the app entitlements to match the profile. It uses a private temporary keychain and requires a signing identity whose certificate is authorized by that verified profile. The profile location is Xcode 16+'s `~/Library/Developer/Xcode/UserData/Provisioning Profiles` (or the legacy location for an older Xcode). An existing profile with the same UUID is never overwritten. Current code rejects setup before private-key import; it does not treat OpenSSL `-noverify` or a generic Apple developer certificate as proof of profile-signing authority.
 
 The profile determines export method: development → `debugging`, ad hoc → `release-testing`, enterprise → `enterprise`, or App Store → `app-store-connect`. The workflow archives with manual signing and exports locally with `destination=export`, no automatic version changes, and no symbol upload. It never passes `-allowProvisioningUpdates` or initiates App Store submission. Development/ad hoc IPAs install only on devices registered in the profile; enterprise requires the appropriate Apple membership and device trust; an App Store export needs the separate authorized submission process.
 

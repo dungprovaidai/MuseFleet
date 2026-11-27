@@ -31,6 +31,8 @@ Quiet hours and preview privacy cannot retract content already read by the perso
 
 No certificate, provisioning profile, APNs signing key or Apple membership was supplied. Unsigned build mode must not require or fetch any. Signed mode requires user-supplied GitHub Secrets and must validate application identifier, Team ID, profile expiry/distribution and any `aps-environment`. Never print decoded profile contents, private key data or signing passwords to workflow logs. Release publication and relay deployment require separate user authorization.
 
+Signed validation currently fails closed before importing credentials: a documented public check of Apple provisioning-profile signer authorization is unresolved. CMS signature integrity by itself is insufficient, and no private policy APIs or untrusted roots are installed. This additional signing gate must be resolved even if credentials are supplied later. Legacy App ID prefixes are checked separately from Team ID; certificate extraction uses the correct single-argument `codesign` option.
+
 ## Release gates still open
 
 1. Compile and execute tests on Apple SDKs; review integration and actual workflow logs.
