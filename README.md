@@ -6,6 +6,8 @@
 
 Repository: <https://github.com/dungprovaidai/MuseFleet> (public theo lựa chọn người dùng để sử dụng standard GitHub Actions runners).
 
+Đã có **IPA unsigned 0.1.0 (build 7)** từ [run thành công 46065778744](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744), source `222c8c0`. Unit tests: 31 qua, 1 skip; UI smoke: 1 qua. Xem [DELIVERY.md](DELIVERY.md) để tải file, đối chiếu SHA-256 và biết giới hạn ký/cài.
+
 ## Tính năng triển khai trong source
 
 - Profile riêng: tên, avatar, màu, vai trò, ghi chú, project, tags, group, yêu thích, thứ tự và URL mở gần nhất.
@@ -48,7 +50,7 @@ App icon gốc nằm trong `design/AppIcon.svg`; bản PNG opaque 1024px nằm t
 
 ## Roadmap theo blocker
 
-1. Thực thi build/test trên macOS có hạn mức được xác nhận, sửa mọi lỗi compiler/test và xuất IPA thật.
+1. Đã hoàn thành build/test trên macOS và xuất IPA unsigned thật; cần ký phù hợp trước khi thử trên iPhone.
 2. Người dùng kiểm thử hai tài khoản Muse trên iPhone, khôi phục phiên và luồng đăng nhập chính thức.
 3. Xác minh UI/IDs/trạng thái của phản hồi, approval và task hoàn tất; thêm adapter observer có fixture regression từ cấu trúc đã được phép quan sát.
 4. Chỉ tích hợp một nguồn sự kiện chính thức đã chứng minh đủ coverage. Sau đó mới xin bật relay/APNs, ký đúng entitlement và kiểm thử khóa máy/force quit.

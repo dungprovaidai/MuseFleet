@@ -1,6 +1,6 @@
 # Ký và cài MuseFleet trên iPhone
 
-Chỉ dùng artifact của một workflow thực tế đã thành công. Kiểm tra commit, tên bundle `com.dungprovaidai.musefleet`, trạng thái ký trong `build-metadata.json` và SHA-256 trước khi cài. Không có IPA chính thức được công nhận cho đến khi link run/artifact và checksum được ghi trong [TEST_REPORT.md](TEST_REPORT.md).
+Đã xác minh IPA unsigned 0.1.0 (build 7) từ run 46065778744, source `222c8c0`; link và SHA-256 nằm trong [DELIVERY.md](DELIVERY.md). Kiểm tra commit, tên bundle `com.dungprovaidai.musefleet`, trạng thái ký trong `build-metadata.json` và SHA-256 trước khi cài. Bằng chứng build/test được ghi trong [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Kiểm tra file tải xuống trên Windows
 

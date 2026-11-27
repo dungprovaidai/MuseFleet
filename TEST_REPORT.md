@@ -11,13 +11,13 @@ Date: 2026-11-28. Local environment: Windows with Python, Node, Git and authenti
 | IPA pipeline Python tests | PASS, 28 tests on Windows | ZIP/Mach-O/plist rejection fixtures, signing fail-closed/prefix/extraction regressions, input validation, project generation and cost guards; no Apple binaries built locally |
 | Observer JavaScript tests | PASS, 9 Node tests on Windows | Synthetic fixture only: baseline history, explicit lifecycle, no per-token emissions, origin/frame rejection, resume and malformed adapter handling |
 | Swift syntax | PASS, tree-sitter parse; simulator compile also passed | The compile is real Xcode evidence; tree-sitter alone cannot resolve Apple APIs or types |
-| Hosted unit tests | PASS: 30 passed, one skipped, zero failures | Latest completed run 46063990154 at 2147858; XCTest reports 31 total. New isolated Keychain regression is pending in the next run |
+| Hosted unit tests | PASS: 31 passed, one skipped, zero failures | Run 46065778744 at 222c8c0; XCTest reports 32 total, including successful isolated Keychain create/read/delete coverage |
 | WebKit isolation PoC | PASS on simulator with local fixture | Two named stores isolate cookie/local storage, retain it across WebView recreation and delete only the chosen store; no live Muse accounts |
 | Foreground notification observer PoC | PASS on simulator with synthetic markup | Baseline history, streaming completion once, deduplication and page-world separation; does not establish production Muse selectors |
 | Local notification scheduling PoC | SKIPPED on simulator | System permission was not granted; no native delivery success is inferred |
-| XCUITest UI smoke | FAILED; corrected retry RUNNING | Run 46063990154 was blocked by the iOS app-lock passcode prompt. Run 46065778744 enables local simulator signing and adds Keychain coverage; no security bypass |
+| XCUITest UI smoke | PASS: one test, zero failures | Profile creation, persistence after relaunch and Accounts/Inbox/Settings navigation; actual Settings screenshot exported and inspected |
 | iOS simulator application/test bundles | PASS compile | Xcode 26.3 / iOS Simulator 26.2 on iPhone SE (3rd generation); iOS 17 runtime remains untested |
-| arm64 device build / archive / IPA | NOT REACHED | UI test failure prevented the packaging step; no IPA exists yet |
+| arm64 device build / IPA | PASS, unsigned 0.1.0 (7) | Real 4,135,976-byte arm64 iOS Mach-O executable; minimum iOS 17.0; 1,000,442-byte IPA validated on macOS and structurally revalidated on Windows; no signed archive or installation claimed |
 | Two real Muse accounts | BLOCKED | User-controlled iPhone login needed |
 | Background / locked / force quit delivery | BLOCKED | No verified production event source, Apple device or APNs setup |
 | Signed IPA / remote push | BLOCKED | No supplied signing credentials or upstream source |
@@ -29,7 +29,7 @@ Written tests are not passed tests. Synthetic fixture data is limited to tests a
 - [46059671694](https://github.com/dungprovaidai/MuseFleet/actions/runs/46059671694), source `2db9744`: 31 unit tests, one skipped, zero failures; UI smoke failed on a noninteractive tab match. Device build and IPA upload skipped.
 - [46061676530](https://github.com/dungprovaidai/MuseFleet/actions/runs/46061676530), source `ed45ea3`: same unit result; UI smoke failed with `Invalid key path isHittable specified in predicate format string (XCTElementQueryInvalidPredicate)`. Logs and `.xcresult` artifacts were downloaded; no complete UI flow or Settings screenshot was verified.
 - [46063990154](https://github.com/dungprovaidai/MuseFleet/actions/runs/46063990154), source `2147858`: 31 unit tests, one skipped, zero failures; UI smoke timed out on tab hit-testing. The exported issue description and simulator recording were inspected. A frame from the recording shows the system passcode prompt for MuseFleet covering the app; no profile creation or Settings screenshot was reached. Both readable and privacy-redacted view trees appear behind the prompt. Device build and IPA upload skipped.
-- [46065778744](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744), source `222c8c0`: retry running. Simulator signing is local ad hoc; no Apple identity/profile is involved. A new hosted test creates, reads and deletes a uniquely named synthetic Keychain item without changing the real app-lock preference. Unsigned simulator Keychain access is the suspected trigger of the previous prompt; the new run must verify the hypothesis. UI tests match tab identifier and readable label, then directly evaluate `.isHittable`. Production app-lock behavior and device unsigned packaging are unchanged.
+- [46065778744](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744), source `222c8c0c94ca2668ac09382452bcf78734738cee`: SUCCESS. Local ad hoc simulator signing restored Keychain access without an Apple identity/profile. The isolated Keychain regression passed, hosted units reported 31 passed/one skipped, and UI smoke passed in 44.753 seconds. Downloaded `Tests.xcresult/database.sqlite3` independently reports 33 case runs: 32 Success, one Skipped and no other result. This includes the UI case; it is not 32 passed unit tests. Production app-lock behavior is unchanged. The arm64 unsigned device build and IPA validation then passed.
 
 ## Physical iPhone checklist
 
@@ -51,9 +51,17 @@ Record device model, iOS version, build SHA, installation method and signing met
 14. **Accessibility:** largest Dynamic Type, VoiceOver labels/actions, contrast, safe areas, landscape and iPad layout if distributed for iPad.
 15. **Cleanup:** remove disposable profiles, website data, test downloads and delivered TEST ONLY notifications. No sensitive screenshots are saved by default.
 
-## Required delivery evidence
+## Verified delivery evidence
 
-A successful complete macOS Actions run, exact commit, passing UI `.xcresult`, actual simulator screenshot files, IPA validation JSON, SHA-256 and signing status must be added after execution. Failed runs already produced `.xcresult` artifacts, but no completed IPA or checksum has been verified. Physical-device results remain separate.
+The successful run produced `MuseFleet-unsigned.ipa`, its checksum and build metadata. The IPA artifact is [15230534206](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744/artifacts/15230534206); actual simulator/build results are [15230584240](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744/artifacts/15230584240). GitHub reports expiry at 2026-11-28 20:56 UTC; local copies were retained under `artifacts/delivery-46065778744/` and `artifacts/results-46065778744/` before expiry.
+
+- IPA SHA-256: `c384d3dcde36061bb4a5a3872d3ee976e6f6425f5c5ade168b66743e7844879d`.
+- Metadata: version `0.1.0`, build `7`, bundle `com.dungprovaidai.musefleet`, arm64/iOS, Xcode 26.3 (17C529), SDK iPhoneOS 26.2, minimum iOS 17.0, unsigned and no embedded provisioning profile.
+- Validation: the downloaded IPA passed `scripts/validate_ipa.py --signing unsigned`; its parsed metadata matches the runner, ZIP CRCs pass and Windows `Get-FileHash` independently agrees with the `.sha256` and metadata. The native executable is 4,135,976 bytes, rather than a placeholder. macOS also checked the absence of a code signature. `codesign_verified=false` reflects the unsigned artifact, not a verified distribution signature.
+- Actual screenshot: exported `68E76ABD-600F-4870-B9BE-F3A7A5F1D325.png`, named “MuseFleet simulator Settings” in the test manifest, visually inspected and retained as `artifacts/delivery-46065778744/MuseFleet-simulator-Settings.png`. It shows Settings and the four native tabs; notification permission is “Not requested.”
+- The downloaded `.xcresult` bundles and read-only SQLite queries substantiate the test counts and outcomes. An extracted summary is retained as `test-evidence.json`; structural validation is retained as `independent-validation.json` in the delivery folder.
+
+Physical-device installation, iOS 17 runtime behavior, authenticated Muse login and real/background notifications remain unverified. See [DELIVERY.md](DELIVERY.md) for the handoff.
 
 ## Source review corrections
 
