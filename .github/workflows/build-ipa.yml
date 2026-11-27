@@ -1,0 +1,80 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      signed:
+        description: Sign using Apple secrets (requires a matching valid profile)
+        type: boolean
+        default: false
+      version:
+        description: Version with three numeric components
+        type: string
+        default: '1.0.0'
+        required: true
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-ipa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: ${{ vars.ALLOW_MACOS_ACTIONS == 'true' }}
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      INPUT_SIGNED: ${{ github.event_name == 'workflow_dispatch' && inputs.signed && 'true' || 'false' }}
+      INPUT_VERSION: ${{ inputs.version || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate inputs, pipeline scripts, and project
+        run: |
+          python3 -m unittest discover -s Tests/Pipeline -v
+          python3 scripts/generate_project.py --check
+          python3 -c 'import os, sys; sys.path.insert(0, "scripts"); from apple_pipeline import build_version; build_version(os.environ)'
+      - name: Select a preinstalled Xcode
+        run: python3 scripts/apple_pipeline.py select-xcode
+      - name: Resolve, build, and run unit and UI tests
+        run: python3 scripts/apple_pipeline.py test
+      - name: Prepare validated signing credentials
+        if: ${{ env.INPUT_SIGNED == 'true' }}
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: python3 scripts/signing.py setup "$RUNNER_TEMP/musefleet-signing"
+      - name: Build and validate real arm64 IPA
+        run: python3 scripts/apple_pipeline.py build-ipa
+      - name: Remove ephemeral signing credentials
+        if: ${{ always() && env.INPUT_SIGNED == 'true' }}
+        run: python3 scripts/signing.py cleanup "$RUNNER_TEMP/musefleet-signing"
+      - name: Upload actual build and test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MuseFleet-build-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/*.xcresult
+            artifacts/simulator.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload validated IPA, checksum, and metadata
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MuseFleet-ipa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/*.ipa
+            artifacts/*.sha256
+            artifacts/build-metadata.json
+          if-no-files-found: error
+          retention-days: 7
