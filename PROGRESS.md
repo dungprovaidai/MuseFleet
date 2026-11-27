@@ -15,7 +15,7 @@
 | 4 Native UI | SOURCE INTEGRATED; Apple runtime pending | Home, Accounts, Inbox, Settings; original icon generated; no demo accounts seeded |
 | 5 Background delivery | BLOCKED | No verified upstream event source or APNs credentials |
 | 6 Security and QA | IN PROGRESS | App lock, URL policy, privacy, atomic storage and unit test source; no Apple runtime execution |
-| 7 GitHub and IPA | PIPELINE INTEGRATED; public build preparation | User approved source public; visibility changed; 21 Python and 9 Node tests passed; 31 Swift files syntax-parsed |
+| 7 GitHub and IPA | FIRST APPLE BUILD RUNNING | Public source authorized; manual run 46052949212 at f05a5d4. Local checks: 28 Python + 9 Node tests passed; 31 Swift files syntax-parsed |
 | 8 Delivery | PENDING | Requires real artifact and honest test evidence |
 
 Never treat a written test, simulator-only check or packaged placeholder as a verified production feature.
@@ -36,3 +36,10 @@ Never treat a written test, simulator-only check or packaged placeholder as a ve
 2. No physical iPhone or browser MCP; user-controlled Muse login and two-account live isolation are not tested.
 3. No verified authenticated Muse DOM or official event upstream; real response notifications and background/locked/force-quit delivery remain incomplete.
 4. No Apple signing credentials; signed IPA and APNs are unavailable. A real unsigned arm64 IPA still requires an Apple build runner.
+
+## Build evidence
+
+- First manual unsigned build dispatched: https://github.com/dungprovaidai/MuseFleet/actions/runs/46052949212 (source f05a5d4). Result pending; no IPA exists yet.
+- User approved public source; GitHub visibility confirmed public. Official billing documentation states standard public Actions usage is free and scopes metered compute/storage to private repositories. Current repository initially had zero artifacts. Artifact retention is one day; automatic push/PR/tag execution remains off.
+- GitHub OAuth workflow permission was added through the official device authentication flow after an initial push rejection. No credential was committed.
+- Signed mode is fail-closed pending documented provisioning-profile signer authorization, in addition to missing signing assets. Unsigned build is independent.

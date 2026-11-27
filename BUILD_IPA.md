@@ -34,7 +34,7 @@ The script uses the currently selected Xcode locally. On Actions, `select-xcode`
 
 ## Actions and cost authorization
 
-Every macOS job in `.github/workflows/ci.yml` and `.github/workflows/build-ipa.yml` requires the repository Actions variable `ALLOW_MACOS_ACTIONS` to equal the exact string `true`. Without it, push, pull request, tag, and manual dispatch jobs are skipped. Do not enable this variable, push a triggering tag, or dispatch a workflow until the owner authorizes runner usage. No workflow has been launched as part of this implementation.
+Every macOS job in `.github/workflows/ci.yml` and `.github/workflows/build-ipa.yml` requires the repository Actions variable `ALLOW_MACOS_ACTIONS` to equal the exact string `true`. Without it, push, pull request, tag, and manual dispatch jobs are skipped. The user approved public source; visibility was confirmed public and standard public Actions compute/storage policy was checked before the first manual run. See PROGRESS.md and TEST_REPORT.md for actual run links and conclusions. This does not authorize paid runners or other services.
 
 Both workflows use the standard `macos-15` runner with a 30-minute job limit, read-only repository permissions, and artifact retention of one day. The CI workflow supports main/master pushes, pull requests, and manual dispatch. The IPA workflow supports manual dispatch or `v*` tags. Automatic push/PR/tag builds also require `ALLOW_AUTOMATIC_MACOS_ACTIONS=true`; approval for a manual run does not enable ongoing automatic consumption. A tag build is always unsigned; signed builds require the manual boolean input. Neither workflow creates a GitHub Release, publishes an app, or installs anything on a device. Download artifacts promptly before they expire.
 

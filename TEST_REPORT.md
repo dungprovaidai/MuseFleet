@@ -8,7 +8,7 @@ Date: 2026-11-28. Environment: Windows; Python, Node, Git and authenticated GitH
 |---|---|---|
 | Official Muse home/login form | VERIFIED public HTTP response | Research notes; no credentials submitted |
 | Original app icon | PASS local generator check | 1024×1024 RGB PNG, no alpha |
-| IPA pipeline Python tests | PASS, 21 tests on Windows | ZIP/Mach-O/plist rejection fixtures, signing orchestration mocks, input validation, project generation and cost guards; no Apple binaries built |
+| IPA pipeline Python tests | PASS, 28 tests on Windows | ZIP/Mach-O/plist rejection fixtures, signing fail-closed/prefix/extraction regressions, input validation, project generation and cost guards; no Apple binaries built locally |
 | Observer JavaScript tests | PASS, 9 Node tests on Windows | Synthetic fixture only: baseline history, explicit lifecycle, no per-token emissions, origin/frame rejection, resume and malformed adapter handling |
 | Swift syntax | PASS, tree-sitter parse of 31 files | Syntax only; cannot resolve Apple APIs, actor isolation or types |
 | Core Swift tests | WRITTEN, NOT RUN | Persistence, deletion, deduplication, denial, safe routes, quiet hours, corruption preservation |
@@ -16,7 +16,7 @@ Date: 2026-11-28. Environment: Windows; Python, Node, Git and authenticated GitH
 | Foreground notification observer PoC | PENDING fixture execution | Does not establish production Muse selectors |
 | Local notification scheduling PoC | WRITTEN, NOT RUN | Requires granted system permission; otherwise explicit skip |
 | XCUITest UI smoke | WRITTEN, NOT RUN | Tabs, profile creation, restart persistence, simulator screenshot attachment |
-| iOS build / archive / IPA | NOT RUN | User approved public source; preparing standard public Actions run after storage-policy check |
+| iOS build / archive / IPA | IN PROGRESS | First authorized standard public Actions run: https://github.com/dungprovaidai/MuseFleet/actions/runs/46052949212 at f05a5d4 |
 | Two real Muse accounts | BLOCKED | User-controlled iPhone login needed |
 | Background / locked / force quit delivery | BLOCKED | No verified production event source, Apple device or APNs setup |
 | Signed IPA / remote push | BLOCKED | No supplied signing credentials or upstream source |
