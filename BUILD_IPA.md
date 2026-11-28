@@ -2,7 +2,7 @@
 
 MuseFleet targets iPhone on iOS 17 or later, uses Swift 5 language mode, and has no runtime package dependencies. The bundle identifier is `com.dungprovaidai.musefleet`. The checked-in `MuseFleet.xcodeproj` and shared `MuseFleet` scheme include the app, hosted `MuseFleetTests`, and `MuseFleetUITests` targets.
 
-Windows can generate the project and test the pipeline scripts. Xcode, simulator tests, code signing, and a real IPA require macOS. Authorized public GitHub Actions run 46065778744 at 222c8c0 passed the hosted unit/UI suites and produced a verified unsigned arm64 IPA, version 0.1.0 (7). See DELIVERY.md for its links/checksum and TEST_REPORT.md for execution evidence. No physical-device installation has been verified.
+Windows can generate the project and test the pipeline scripts. Xcode, simulator tests, code signing, and a real IPA require macOS. Authorized public GitHub Actions run 46090966062 at f2bbe8c passed the hosted unit/UI suites and produced a verified unsigned arm64 diagnostic IPA, version 0.1.1 (8). See DELIVERY.md for links/checksum and TEST_REPORT.md for evidence. No physical-device installation has been verified.
 
 ## Integrating source files
 

@@ -6,7 +6,7 @@
 
 Repository: <https://github.com/dungprovaidai/MuseFleet> (public theo lựa chọn người dùng để sử dụng standard GitHub Actions runners).
 
-Đã có **IPA unsigned 0.1.0 (build 7)** từ [run thành công 46065778744](https://github.com/dungprovaidai/MuseFleet/actions/runs/46065778744), source `222c8c0`. Unit tests: 31 qua, 1 skip; UI smoke: 1 qua. Xem [DELIVERY.md](DELIVERY.md) để tải file, đối chiếu SHA-256 và biết giới hạn ký/cài.
+Đã có **IPA chẩn đoán unsigned 0.1.1 (build 8)** từ [run thành công 46090966062](https://github.com/dungprovaidai/MuseFleet/actions/runs/46090966062), source `f2bbe8c`. Unit tests: 32 qua, 1 skip; UI smoke: 1 qua. Xem [DELIVERY.md](DELIVERY.md) để tải file, đối chiếu SHA-256 và đọc mã lỗi an toàn.
 
 ## Tính năng triển khai trong source
 
