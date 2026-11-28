@@ -45,6 +45,7 @@ final class BrowserSession: NSObject, NotificationProvider {
     @ObservationIgnored private var detectionEnabled = true
     @ObservationIgnored private var deferredURL: URL?
     @ObservationIgnored private var blockedMainFrameNavigation = false
+    @ObservationIgnored private var blockedMainFrameHost: String?
     @ObservationIgnored private var observerSource: String?
     @ObservationIgnored private var observerDocumentID: String?
     @ObservationIgnored private var receivedEventIDs: Set<String> = []
@@ -84,6 +85,7 @@ final class BrowserSession: NSObject, NotificationProvider {
         closePopup()
         errorMessage = nil
         blockedMainFrameNavigation = false
+        blockedMainFrameHost = nil
         needsReload = false
         detectionEnabled = true
         installObserverScript()
@@ -96,6 +98,7 @@ final class BrowserSession: NSObject, NotificationProvider {
         resolveJavaScriptDialog(confirmed: false)
         errorMessage = nil
         blockedMainFrameNavigation = false
+        blockedMainFrameHost = nil
         needsReload = false
         detectionEnabled = true
         installObserverScript()
@@ -329,12 +332,15 @@ final class BrowserSession: NSObject, NotificationProvider {
         guard view === displayedWebView else { return }
         if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled {
             blockedMainFrameNavigation = false
+            blockedMainFrameHost = nil
             return
         }
-        // Localized errors can contain authentication URLs; expose only a safe category and numeric code.
+        // Localized errors can contain authentication URLs; expose only the category, code, and sanitized host.
         errorMessage = BrowserNavigationFailure.message(domain: failure.domain, code: failure.code,
-                                                        policyBlocked: blockedMainFrameNavigation)
+                                                        policyBlocked: blockedMainFrameNavigation,
+                                                        blockedHost: blockedMainFrameHost)
         blockedMainFrameNavigation = false
+        blockedMainFrameHost = nil
         if view === ownedWebView { observerStatus = adapter == nil ? .unavailable : .failed }
         synchronizeState()
     }
@@ -371,6 +377,7 @@ extension BrowserSession: WKNavigationDelegate {
             decisionHandler(.cancel)
             if navigationAction.targetFrame?.isMainFrame != false {
                 blockedMainFrameNavigation = true
+                blockedMainFrameHost = BrowserNavigationPolicy.displayHost(url)
                 askToOpenExternally(url)
             }
         }
@@ -384,6 +391,7 @@ extension BrowserSession: WKNavigationDelegate {
             decisionHandler(.cancel)
             if navigationResponse.isForMainFrame, let url = navigationResponse.response.url {
                 blockedMainFrameNavigation = true
+                blockedMainFrameHost = BrowserNavigationPolicy.displayHost(url)
                 askToOpenExternally(url)
             }
             return
@@ -394,6 +402,7 @@ extension BrowserSession: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         guard !disposed else { return }
         blockedMainFrameNavigation = false
+        blockedMainFrameHost = nil
         errorMessage = nil
         needsReload = false
         if webView === self.webView {

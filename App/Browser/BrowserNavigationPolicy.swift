@@ -1,12 +1,22 @@
 import Foundation
 
 enum BrowserNavigationPolicy {
-    // The public Muse page uses first-party login. Add other hosts only after verifying a real login flow.
-    static let verifiedLoginHosts: Set<String> = []
+    // Muse's public OIDC client uses these exact HTTPS origins; social-provider paths are narrowed below.
+    static let verifiedLoginHosts: Set<String> = ["auth.meta.com", "www.facebook.com", "www.instagram.com"]
 
     static func allowsInWeb(_ url: URL) -> Bool {
-        URLPolicy.isMuse(url) || (URLPolicy.isSafeExternal(url) &&
-            verifiedLoginHosts.contains(url.host?.lowercased() ?? ""))
+        guard URLPolicy.isSafeExternal(url) else { return false }
+        if URLPolicy.isMuse(url) { return true }
+        guard let host = url.host?.lowercased(), verifiedLoginHosts.contains(host) else { return false }
+        return host == "auth.meta.com" || isMetaAuthPage(url.path)
+    }
+
+    static func displayHost(_ url: URL?) -> String? {
+        guard let host = url?.host?.lowercased(), !host.isEmpty, host.utf8.count <= 253,
+              host.utf8.allSatisfy({
+                  (48...57).contains($0) || (97...122).contains($0) || [45, 46, 58].contains(Int($0))
+              }) else { return nil }
+        return host
     }
 
     static func allowsBlobDownload(_ url: URL) -> Bool {
@@ -46,13 +56,17 @@ enum BrowserNavigationPolicy {
         let name = String(cleaned.prefix(120)).trimmingCharacters(in: .whitespacesAndNewlines)
         return name.isEmpty || name == "." || name == ".." ? "Download" : name
     }
+
+    private static func isMetaAuthPage(_ path: String) -> Bool {
+        path == "/auth_platform" || path.hasPrefix("/auth_platform/")
+    }
 }
 
 enum BrowserNavigationFailure {
-    static func message(domain: String, code: Int, policyBlocked: Bool = false) -> String {
+    static func message(domain: String, code: Int, policyBlocked: Bool = false, blockedHost: String? = nil) -> String {
         if domain == "WebKitErrorDomain", code == 102 {
             return policyBlocked
-                ? "MuseFleet stopped this redirect because its website isn't on the verified Muse host list. Check for an Open outside prompt; if this happened during sign-in, share only the domain shown, not a link or code."
+                ? "MuseFleet stopped a redirect to \(blockedHost ?? "an unidentified host") because it isn't on the verified Muse/auth host list. Only the hostname is shown; if this is part of Muse sign-in, share just this hostname, never the URL or a sign-in code."
                 : "WebKit interrupted this navigation (code 102), often when a redirect or download takes over. If the page stays blank, retry and share any external site domain shown; never send a sign-in link or code."
         }
         guard domain == NSURLErrorDomain else { return "Web content failed (WebKit error \(code))." }

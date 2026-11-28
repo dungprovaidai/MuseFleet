@@ -2,7 +2,7 @@ import XCTest
 @testable import MuseFleet
 
 final class BrowserPolicyTests: XCTestCase {
-    func testNavigationFailureShowsSafeCodeAndKeepsTLSChecksEnabled() {
+    func testNavigationFailureShowsSafeCodeAndKeepsTLSChecksEnabled() throws {
         let secure = BrowserNavigationFailure.message(domain: NSURLErrorDomain,
                                                        code: NSURLErrorServerCertificateUntrusted)
         XCTAssertTrue(secure.contains("network error -1202"))
@@ -16,19 +16,34 @@ final class BrowserPolicyTests: XCTestCase {
         let interrupted = BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 102)
         XCTAssertTrue(interrupted.contains("redirect or download"))
         XCTAssertFalse(interrupted.contains("verified Muse host list"))
-        let blocked = BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 102, policyBlocked: true)
-        XCTAssertTrue(blocked.contains("verified Muse host list"))
-        XCTAssertTrue(blocked.contains("domain shown"))
-        XCTAssertFalse(blocked.contains("https://"))
+        let destination = URL(string: "https://auth.meta.com/oidc?code=fixture-secret")!
+        let blockedHost = try XCTUnwrap(BrowserNavigationPolicy.displayHost(destination))
+        let blocked = BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 102,
+                                                       policyBlocked: true, blockedHost: blockedHost)
+        XCTAssertTrue(blocked.contains("verified Muse/auth host list"))
+        XCTAssertTrue(blocked.contains("auth.meta.com"))
+        XCTAssertFalse(blocked.contains("fixture-secret"))
+        XCTAssertFalse(blocked.contains("/oidc"))
     }
 
     func testOnlyExactHTTPSMuseHostsStayInWeb() {
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://muse.ai/")!))
+        XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.muse.ai/")!))
+        XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://auth.meta.com/oidc")!))
+        XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.facebook.com/auth_platform/continue")!))
+        XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.instagram.com/auth_platform/continue")!))
         for value in ["http://muse.ai/", "https://muse.ai.attacker.test/", "https://attacker.test/?muse.ai",
-                      "https://muse.ai:8443/", "https://user:secret@muse.ai/", "https://accounts.google.com/"] {
+                      "https://muse.ai:8443/", "https://user:secret@muse.ai/", "https://accounts.google.com/",
+                      "https://auth.meta.com.attacker.test/oidc", "http://auth.meta.com/oidc",
+                      "https://auth.meta.com:8443/oidc", "https://accountscenter.meta.com/auth_platform/",
+                      "https://www.facebook.com/profile.php", "https://m.facebook.com/auth_platform/continue"] {
             XCTAssertFalse(BrowserNavigationPolicy.allowsInWeb(URL(string: value)!), value)
         }
-        XCTAssertTrue(BrowserNavigationPolicy.verifiedLoginHosts.isEmpty)
+        XCTAssertEqual(BrowserNavigationPolicy.verifiedLoginHosts,
+                       ["auth.meta.com", "www.facebook.com", "www.instagram.com"])
+        XCTAssertEqual(BrowserNavigationPolicy.displayHost(URL(string: "https://auth.meta.com/oidc?code=secret")),
+                       "auth.meta.com")
+        XCTAssertNil(BrowserNavigationPolicy.displayHost(URL(string: "data:text/html,secret")))
     }
 
     func testExternalNavigationCanOnlyBeRequestedForSecureWebsitesOrAppHandoffs() {
