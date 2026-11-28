@@ -2,6 +2,19 @@ import XCTest
 @testable import MuseFleet
 
 final class BrowserPolicyTests: XCTestCase {
+    func testNavigationFailureShowsSafeCodeAndKeepsTLSChecksEnabled() {
+        let secure = BrowserNavigationFailure.message(domain: NSURLErrorDomain,
+                                                       code: NSURLErrorServerCertificateUntrusted)
+        XCTAssertTrue(secure.contains("network error -1202"))
+        XCTAssertTrue(secure.contains("Certificate checks remain enabled"))
+        XCTAssertFalse(secure.contains("https://"))
+
+        XCTAssertTrue(BrowserNavigationFailure.message(domain: NSURLErrorDomain,
+                                                       code: NSURLErrorCannotFindHost).contains("DNS"))
+        XCTAssertTrue(BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 4)
+            .contains("WebKit error 4"))
+    }
+
     func testOnlyExactHTTPSMuseHostsStayInWeb() {
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://muse.ai/")!))
         for value in ["http://muse.ai/", "https://muse.ai.attacker.test/", "https://attacker.test/?muse.ai",

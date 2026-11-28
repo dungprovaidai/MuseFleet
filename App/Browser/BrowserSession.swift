@@ -325,10 +325,8 @@ final class BrowserSession: NSObject, NotificationProvider {
         let failure = error as NSError
         if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled { return }
         guard view === displayedWebView else { return }
-        // Localized WebKit errors may include authentication URLs; show a fixed recovery message instead.
-        errorMessage = failure.domain == NSURLErrorDomain && failure.code == NSURLErrorNotConnectedToInternet
-            ? "You appear to be offline. Check your connection and reload."
-            : "The page could not load securely. Try reloading or return to Muse home."
+        // Localized errors can contain authentication URLs; expose only a safe category and numeric code.
+        errorMessage = BrowserNavigationFailure.message(domain: failure.domain, code: failure.code)
         if view === ownedWebView { observerStatus = adapter == nil ? .unavailable : .failed }
         synchronizeState()
     }

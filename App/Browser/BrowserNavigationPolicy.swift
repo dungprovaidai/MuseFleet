@@ -47,3 +47,25 @@ enum BrowserNavigationPolicy {
         return name.isEmpty || name == "." || name == ".." ? "Download" : name
     }
 }
+
+enum BrowserNavigationFailure {
+    static func message(domain: String, code: Int) -> String {
+        guard domain == NSURLErrorDomain else { return "Web content failed (WebKit error \(code))." }
+        switch code {
+        case NSURLErrorNotConnectedToInternet:
+            return "You appear to be offline (network error \(code)). Check your connection and reload."
+        case NSURLErrorSecureConnectionFailed, NSURLErrorServerCertificateHasBadDate,
+             NSURLErrorServerCertificateUntrusted, NSURLErrorServerCertificateHasUnknownRoot,
+             NSURLErrorServerCertificateNotYetValid:
+            return "The secure connection could not be verified (network error \(code)). Check device date/time and network filtering. Certificate checks remain enabled."
+        case NSURLErrorAppTransportSecurityRequiresSecureConnection:
+            return "The page requested an insecure connection (network error \(code)). MuseFleet will not fall back to HTTP."
+        case NSURLErrorCannotFindHost, NSURLErrorDNSLookupFailed:
+            return "The Muse server could not be found (network error \(code)). Check DNS, VPN, or network filtering."
+        case NSURLErrorCannotConnectToHost, NSURLErrorTimedOut, NSURLErrorNetworkConnectionLost:
+            return "Muse could not be reached (network error \(code)). Try another network and reload."
+        default:
+            return "The page could not load (network error \(code)). Try reloading or return to Muse home."
+        }
+    }
+}
