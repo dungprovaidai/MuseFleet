@@ -18,7 +18,7 @@ Research performed: 2026-11-28. Scope: public Muse landing HTML and first-party 
 
 7. **The public Muse client has saved-account/AYMH-related UI behavior.** At retrieval, first-party bundles `0vkin0knyrcae.js` and `3ou-wk-9p7bb8.js` contain UI events for account cards and code that handles an AYMH redirect-cycle route. They do not include the literal `auth.muse.ai` hostname in the fetched bundle strings and do not document the network destination. This is consistent with an account-selection/login hop but is not proof of this particular host's contract. No undocumented API or protocol capture was used.
 
-8. **Follow-up source change:** version 0.1.4 adds only the exact `auth.muse.ai` host to the HTTPS login allowlist, and tests that deceptive suffixes, HTTP, a nonstandard port and URL credentials remain rejected. The host is not wildcarded. This is based on the user's observed redirect plus DNS delegation and first-party login UI context; it still does not prove the page, flow or WKWebView sign-in completes.
+8. **Follow-up source change and test evidence:** version 0.1.4 adds only the exact `auth.muse.ai` host to the HTTPS login allowlist, and tests that deceptive suffixes, HTTP, a nonstandard port and URL credentials remain rejected. The host is not wildcarded. GitHub Actions [run 46102409678](https://github.com/dungprovaidai/MuseFleet/actions/runs/46102409678) passed 32 unit tests and one UI test; one notification-permission test was skipped. The resulting unsigned IPA passed independent arm64/Mach-O/metadata/checksum validation; SHA-256 `e4986b79800abb037cbcac0a41f3cd4f9a1ffdc01c554f4e18a9db57423c82a2`. This still does not prove the page, flow or WKWebView sign-in completes.
 
 ## Remaining checks
 

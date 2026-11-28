@@ -2,15 +2,16 @@
 
 ## Kết luận
 
-Ảnh của người dùng cho thấy app đã hủy redirect main-frame; ảnh kế tiếp xác định hostname là `auth.muse.ai`. Bản 0.1.3 đã sửa luồng `auth.meta.com`, nhưng ảnh mới chứng minh redirect kế tiếp sang hostname Muse-specific vẫn bị chặn. Tra DNS công khai qua hai nhà cung cấp độc lập cho thấy `auth.muse.ai` CNAME tới `star.c10r.facebook.com`; đồng thời frontend Muse hiện có hành vi công khai liên quan đến saved-account/AYMH redirect cycle. Đây là đủ căn cứ để thêm đúng HTTPS origin `auth.muse.ai`, không wildcard domain.
+Ảnh của người dùng cho thấy app đã hủy redirect main-frame; hostname là `auth.muse.ai`. Bản 0.1.3 đã sửa luồng `auth.meta.com`, nhưng redirect kế tiếp sang hostname Muse-specific vẫn bị chặn. Tra DNS công khai qua hai nhà cung cấp độc lập cho thấy `auth.muse.ai` CNAME tới `star.c10r.facebook.com`; đồng thời frontend Muse hiện có hành vi công khai liên quan đến saved-account/AYMH redirect cycle. Bản 0.1.4 cho phép đúng HTTPS origin `auth.muse.ai`, không wildcard domain.
 
 Đây là thay đổi chính sách dựa trên hostname do người dùng quan sát, DNS delegation công khai và ngữ cảnh frontend Muse. Nó không chứng minh path phía sau hostname hoặc tính tương thích WKWebView. HTTPS GET không đăng nhập tới root trả 404; ảnh không lộ path/query nên không thể kiểm tra endpoint cụ thể. Không có form nào được gửi, không dùng tài khoản, cookie, OTP hay token. XCTest kiểm tra exact host và từ chối host giả/HTTP/cổng bất thường; simulator không kiểm chứng dịch vụ Meta thật. Cần thử bản đã ký trên iPhone để xác nhận bước đăng nhập.
 
 ## Kết quả build hiện tại
 
-- IPA unsigned 0.1.4 (build 11), arm64 iOS; kiểm thử Apple runner đang chạy.
+- IPA unsigned 0.1.4 (build 11), arm64 iOS; run 46102409678 đã qua 32 unit tests và một UI test, một test notification được skip do chưa cấp quyền.
 - Commit source: `5d7282608f21008d3828f4dd749a1f4b052df1b3`.
-- Tải IPA/checksum sẽ được ghi vào [DELIVERY.md](../DELIVERY.md) sau khi workflow hoàn tất và artifact được xác minh.
+- SHA-256: `e4986b79800abb037cbcac0a41f3cd4f9a1ffdc01c554f4e18a9db57423c82a2`; artifact link và hướng dẫn ký/cài ở [DELIVERY.md](../DELIVERY.md).
+- Tệp đã tải và xác minh độc lập nằm tại `artifacts/delivery-46102409678/MuseFleet-unsigned.ipa` trong workspace.
 
 ## Bằng chứng và giới hạn
 
@@ -29,4 +30,4 @@ Nếu vẫn lỗi, chỉ cần người dùng báo hostname an toàn hiện tron
 - [Apple: WKWebsiteDataStore](https://developer.apple.com/documentation/webkit/wkwebsitedatastore); [Apple: ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession); [Apple: WKNavigationDelegate](https://developer.apple.com/documentation/webkit/wknavigationdelegate).
 - [Google DNS-over-HTTPS](https://dns.google/resolve?name=auth.muse.ai&type=CNAME); [Cloudflare DNS-over-HTTPS](https://cloudflare-dns.com/dns-query?name=auth.muse.ai&type=CNAME).
 - Muse first-party frontend bundles: [`0vkin0knyrcae.js`](https://muse.ai/_next/static/immutable/chunks/0vkin0knyrcae.js), [`3ou-wk-9p7bb8.js`](https://muse.ai/_next/static/immutable/chunks/3ou-wk-9p7bb8.js).
-- [MuseFleet Actions run 46095940301](https://github.com/dungprovaidai/MuseFleet/actions/runs/46095940301), source `6f84487c6f37dcbcfa758b9d776b8c8a596c65e4`.
+- [MuseFleet Actions run 46102409678](https://github.com/dungprovaidai/MuseFleet/actions/runs/46102409678), source `5d7282608f21008d3828f4dd749a1f4b052df1b3`.
