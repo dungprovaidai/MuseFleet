@@ -13,6 +13,13 @@ final class BrowserPolicyTests: XCTestCase {
                                                        code: NSURLErrorCannotFindHost).contains("DNS"))
         XCTAssertTrue(BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 4)
             .contains("WebKit error 4"))
+        let interrupted = BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 102)
+        XCTAssertTrue(interrupted.contains("redirect or download"))
+        XCTAssertFalse(interrupted.contains("verified Muse host list"))
+        let blocked = BrowserNavigationFailure.message(domain: "WebKitErrorDomain", code: 102, policyBlocked: true)
+        XCTAssertTrue(blocked.contains("verified Muse host list"))
+        XCTAssertTrue(blocked.contains("domain shown"))
+        XCTAssertFalse(blocked.contains("https://"))
     }
 
     func testOnlyExactHTTPSMuseHostsStayInWeb() {

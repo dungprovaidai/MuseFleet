@@ -49,7 +49,12 @@ enum BrowserNavigationPolicy {
 }
 
 enum BrowserNavigationFailure {
-    static func message(domain: String, code: Int) -> String {
+    static func message(domain: String, code: Int, policyBlocked: Bool = false) -> String {
+        if domain == "WebKitErrorDomain", code == 102 {
+            return policyBlocked
+                ? "MuseFleet stopped this redirect because its website isn't on the verified Muse host list. Check for an Open outside prompt; if this happened during sign-in, share only the domain shown, not a link or code."
+                : "WebKit interrupted this navigation (code 102), often when a redirect or download takes over. If the page stays blank, retry and share any external site domain shown; never send a sign-in link or code."
+        }
         guard domain == NSURLErrorDomain else { return "Web content failed (WebKit error \(code))." }
         switch code {
         case NSURLErrorNotConnectedToInternet:

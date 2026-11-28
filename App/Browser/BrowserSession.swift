@@ -44,6 +44,7 @@ final class BrowserSession: NSObject, NotificationProvider {
     @ObservationIgnored private var disposed = false
     @ObservationIgnored private var detectionEnabled = true
     @ObservationIgnored private var deferredURL: URL?
+    @ObservationIgnored private var blockedMainFrameNavigation = false
     @ObservationIgnored private var observerSource: String?
     @ObservationIgnored private var observerDocumentID: String?
     @ObservationIgnored private var receivedEventIDs: Set<String> = []
@@ -82,6 +83,7 @@ final class BrowserSession: NSObject, NotificationProvider {
         resolveJavaScriptDialog(confirmed: false)
         closePopup()
         errorMessage = nil
+        blockedMainFrameNavigation = false
         needsReload = false
         detectionEnabled = true
         installObserverScript()
@@ -93,6 +95,7 @@ final class BrowserSession: NSObject, NotificationProvider {
         pendingExternalURL = nil
         resolveJavaScriptDialog(confirmed: false)
         errorMessage = nil
+        blockedMainFrameNavigation = false
         needsReload = false
         detectionEnabled = true
         installObserverScript()
@@ -323,10 +326,15 @@ final class BrowserSession: NSObject, NotificationProvider {
     private func navigationFailed(_ error: Error, in view: WKWebView) {
         guard !disposed else { return }
         let failure = error as NSError
-        if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled { return }
         guard view === displayedWebView else { return }
+        if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled {
+            blockedMainFrameNavigation = false
+            return
+        }
         // Localized errors can contain authentication URLs; expose only a safe category and numeric code.
-        errorMessage = BrowserNavigationFailure.message(domain: failure.domain, code: failure.code)
+        errorMessage = BrowserNavigationFailure.message(domain: failure.domain, code: failure.code,
+                                                        policyBlocked: blockedMainFrameNavigation)
+        blockedMainFrameNavigation = false
         if view === ownedWebView { observerStatus = adapter == nil ? .unavailable : .failed }
         synchronizeState()
     }
@@ -361,7 +369,10 @@ extension BrowserSession: WKNavigationDelegate {
             decisionHandler(.allow)
         } else {
             decisionHandler(.cancel)
-            if navigationAction.targetFrame?.isMainFrame != false { askToOpenExternally(url) }
+            if navigationAction.targetFrame?.isMainFrame != false {
+                blockedMainFrameNavigation = true
+                askToOpenExternally(url)
+            }
         }
     }
 
@@ -371,7 +382,10 @@ extension BrowserSession: WKNavigationDelegate {
               BrowserNavigationPolicy.allowsInWeb(url) || BrowserNavigationPolicy.allowsBlobDownload(url) ||
                 (webView === popupWebView && url.absoluteString == "about:blank") else {
             decisionHandler(.cancel)
-            if navigationResponse.isForMainFrame, let url = navigationResponse.response.url { askToOpenExternally(url) }
+            if navigationResponse.isForMainFrame, let url = navigationResponse.response.url {
+                blockedMainFrameNavigation = true
+                askToOpenExternally(url)
+            }
             return
         }
         decisionHandler(navigationResponse.canShowMIMEType ? .allow : .download)
@@ -379,6 +393,7 @@ extension BrowserSession: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         guard !disposed else { return }
+        blockedMainFrameNavigation = false
         errorMessage = nil
         needsReload = false
         if webView === self.webView {
