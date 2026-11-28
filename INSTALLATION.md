@@ -1,6 +1,6 @@
 # Ký và cài MuseFleet trên iPhone
 
-Đã xác minh IPA unsigned chẩn đoán 0.1.1 (build 8) từ run 46090966062, source `f2bbe8c`; link và SHA-256 nằm trong [DELIVERY.md](DELIVERY.md). Kiểm tra commit, tên bundle `com.dungprovaidai.musefleet`, trạng thái ký trong `build-metadata.json` và SHA-256 trước khi cài. Bằng chứng build/test được ghi trong [TEST_REPORT.md](TEST_REPORT.md).
+Đã xác minh IPA unsigned chẩn đoán 0.1.3 (build 10) từ run 46095940301, source `6f84487`; link và SHA-256 nằm trong [DELIVERY.md](DELIVERY.md). Kiểm tra commit, tên bundle `com.dungprovaidai.musefleet`, trạng thái ký trong `build-metadata.json` và SHA-256 trước khi cài. Bằng chứng build/test được ghi trong [TEST_REPORT.md](TEST_REPORT.md).
 
 ## Kiểm tra file tải xuống trên Windows
 

@@ -6,7 +6,7 @@
 
 Repository: <https://github.com/dungprovaidai/MuseFleet> (public theo lựa chọn người dùng để sử dụng standard GitHub Actions runners).
 
-Đã có **IPA chẩn đoán unsigned 0.1.1 (build 8)** từ [run thành công 46090966062](https://github.com/dungprovaidai/MuseFleet/actions/runs/46090966062), source `f2bbe8c`. Unit tests: 32 qua, 1 skip; UI smoke: 1 qua. Xem [DELIVERY.md](DELIVERY.md) để tải file, đối chiếu SHA-256 và đọc mã lỗi an toàn.
+Đã có **IPA chẩn đoán unsigned 0.1.3 (build 10)** từ [run thành công 46095940301](https://github.com/dungprovaidai/MuseFleet/actions/runs/46095940301), source `6f84487`. Unit tests: 32 qua, 1 skip; UI smoke: 1 qua. Bản này thêm các host/path đăng nhập Meta được xác nhận từ frontend công khai Muse; chưa kiểm chứng đăng nhập trực tiếp trên iPhone. Xem [DELIVERY.md](DELIVERY.md) để tải file và đối chiếu SHA-256.
 
 ## Tính năng triển khai trong source
 

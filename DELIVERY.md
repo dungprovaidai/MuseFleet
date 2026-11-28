@@ -1,17 +1,18 @@
-# MuseFleet 0.1.1 (8) — diagnostic unsigned IPA
+# MuseFleet 0.1.3 (10) — verified-login-path diagnostic IPA
 
-Bản IPA arm64 thật đã được build trên macOS, tải về và xác minh. Bản chẩn đoán hiện mã lỗi WebKit/network an toàn, không hiện URL/credentials và không bỏ qua TLS. Bản này **chưa ký để cài trên iPhone**. Chưa kiểm thử đăng nhập Muse thật, thông báo Muse/background hoặc thiết bị vật lý.
+Bản IPA arm64 thật đã được build trên macOS, tải về và xác minh. Bản 0.1.3 cho phép các HTTPS origin/path đăng nhập Meta được xác nhận từ mã frontend công khai Muse; host đăng nhập bị chặn khác sẽ hiện chỉ hostname, không có path/query. Đây là tương thích điều hướng có giới hạn, **không phải xác nhận đăng nhập Muse chạy trên thiết bị**. Bản này **chưa ký để cài trên iPhone**; chưa kiểm thử tài khoản Muse thật hoặc thiết bị vật lý.
 
 ## File và source
 
-- [Tải artifact IPA trên GitHub](https://github.com/dungprovaidai/MuseFleet/actions/runs/46090966062/artifacts/15241228164): giải nén ZIP để lấy `MuseFleet-unsigned.ipa`, `.sha256` và `build-metadata.json`. GitHub có thể yêu cầu đăng nhập.
-- [Source đúng commit của IPA](https://github.com/dungprovaidai/MuseFleet/tree/f2bbe8c2ae886e988c9e92d049fa2618750ea3ad) · [Tải ZIP source](https://github.com/dungprovaidai/MuseFleet/archive/f2bbe8c2ae886e988c9e92d049fa2618750ea3ad.zip).
-- [Run build/test thành công](https://github.com/dungprovaidai/MuseFleet/actions/runs/46090966062) · [Artifact kết quả và ảnh simulator](https://github.com/dungprovaidai/MuseFleet/actions/runs/46090966062/artifacts/15241940923).
+- [Tải artifact IPA trên GitHub](https://github.com/dungprovaidai/MuseFleet/actions/runs/46095940301/artifacts/15243895075): giải nén ZIP để lấy `MuseFleet-unsigned.ipa`, `.sha256` và `build-metadata.json`. GitHub có thể yêu cầu đăng nhập.
+- [Source đúng commit của IPA](https://github.com/dungprovaidai/MuseFleet/tree/6f84487c6f37dcbcfa758b9d776b8c8a596c65e4) · [Tải ZIP source](https://github.com/dungprovaidai/MuseFleet/archive/6f84487c6f37dcbcfa758b9d776b8c8a596c65e4.zip).
+- [Run build/test thành công](https://github.com/dungprovaidai/MuseFleet/actions/runs/46095940301) · [Artifact kết quả và ảnh simulator](https://github.com/dungprovaidai/MuseFleet/actions/runs/46095940301/artifacts/15243905022).
+- [Nghiên cứu redirect đăng nhập Muse](reports/Muse%20WKWebView%20sign%20in.md) · [Ghi chú nguồn](research_notes/Muse%20WKWebView%20sign%20in/findings.md).
 
-GitHub chỉ giữ artifact một ngày, hết hạn khoảng **01:09 UTC ngày 29/11/2026**. Đã lưu bản tải về trong workspace Windows:
+GitHub chỉ giữ artifact một ngày, hết hạn khoảng **02:07 UTC ngày 29/11/2026**. Đã lưu bản tải về trong workspace Windows:
 
 ```text
-D:\DUNGG\ios\musefleet\artifacts\delivery-46090966062\
+D:\DUNGG\ios\musefleet\artifacts\delivery-46095940301\
   MuseFleet-unsigned.ipa
   MuseFleet-unsigned.ipa.sha256
   build-metadata.json
@@ -20,35 +21,35 @@ D:\DUNGG\ios\musefleet\artifacts\delivery-46090966062\
   MuseFleet-simulator-Settings.png
 ```
 
-Các bundle `.xcresult` và attachment gốc được giữ tại `artifacts/results-46090966062/`. Bản gốc 0.1.0 vẫn nằm trong `artifacts/delivery-46065778744/`. Artifact build không được commit vào source.
+Các bundle `.xcresult` và attachment gốc được giữ tại `artifacts/results-46095940301/`. Bản 0.1.2 nằm trong thư mục delivery theo run cũ. Artifact build không được commit vào source.
 
 ## Danh tính bản build
 
 | Mục | Giá trị |
 |---|---|
-| Version / build | 0.1.1 / 8 |
-| Source commit | `f2bbe8c2ae886e988c9e92d049fa2618750ea3ad` |
+| Version / build | 0.1.3 / 10 |
+| Source commit | `6f84487c6f37dcbcfa758b9d776b8c8a596c65e4` |
 | Bundle ID | `com.dungprovaidai.musefleet` |
 | Nền tảng / CPU | iOS / arm64 |
 | Minimum iOS | 17.0; chưa chạy test trên iOS 17 |
 | Xcode / SDK | Xcode 26.3 (17C529) / iPhoneOS 26.2 |
-| Kích thước IPA | 1,000,869 bytes |
-| Executable | Mach-O arm64 thật, 4,136,144 bytes |
+| Kích thước IPA | 1,002,475 bytes |
+| Executable | Mach-O arm64 thật, 4,137,144 bytes |
 | Chữ ký / provisioning | Không có; unsigned |
 
 SHA-256 của **file IPA**, không phải ZIP artifact bên ngoài:
 
 ```text
-3f7d72b27a553d339a0827f93a03aca06d840d091c8cd69b6d8ed7d406ebb98b
+433d08fff50414a3136c390eb165c45880ed9abf5aed096b2ca6fa8d5be7c1fb
 ```
 
 Đã đối chiếu checksum bằng validator và `Get-FileHash` độc lập trên Windows; metadata khớp runner. macOS xác nhận executable không có chữ ký. ZIP CRC, cấu trúc bundle, arm64 Mach-O và metadata iOS đều qua kiểm tra.
 
 ## Kiểm thử và cài đặt
 
-Unit tests trên simulator: **32 qua, 1 skip, không lỗi**. Test bị skip cần quyền thông báo hệ thống. UI smoke test: **1 qua**, gồm tạo profile, lưu qua lần mở lại và điều hướng Accounts/Inbox/Settings. Database `.xcresult` xác nhận tổng 33 test thành công và 1 skip, gồm UI test.
+Unit tests trên simulator: **32 qua, 1 skip, không lỗi**. Test bị skip cần quyền thông báo hệ thống. UI smoke test: **1 qua**, gồm tạo profile, lưu qua lần mở lại và điều hướng Accounts/Inbox/Settings. Database `.xcresult` xác nhận 33 test thành công (32 unit + 1 UI) và 1 skip. XCTest policy xác nhận host/path đăng nhập được phép, còn host giả mạo, scheme không an toàn, cổng khác thường và đường dẫn ngoài luồng đều bị từ chối.
 
-Khi thử trên máy, đọc dòng lỗi trong banner, ví dụ `network error -1200` (TLS/chứng chỉ), `network error -1003` (DNS), hoặc `WebKit error 4`. Chỉ gửi mã và nội dung phân loại; không cần URL hội thoại hay thông tin tài khoản. Bản 0.1.1 bổ sung chẩn đoán, **chưa xác nhận lỗi tải trang đã được sửa**.
+Khi thử trên máy, tự hoàn tất đăng nhập Muse bằng luồng chính thức. Nếu trang vẫn không mở và banner báo redirect bị chặn, chỉ gửi hostname hiển thị; không gửi URL đăng nhập, mã xác minh hay thông tin tài khoản. **Chưa xác nhận đăng nhập Muse đã chạy thành công**: điều đó cần kiểm tra trên iPhone của bạn.
 
 Simulator dùng chữ ký ad hoc cục bộ để truy cập Keychain. Đây không phải chữ ký phân phối của IPA cho thiết bị. Muốn cài trên iPhone thông thường phải ký/provision phù hợp; xem [INSTALLATION.md](INSTALLATION.md). Chưa có signed IPA, bản cài iPhone hay TestFlight.
 
