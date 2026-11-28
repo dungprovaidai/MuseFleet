@@ -30,17 +30,20 @@ final class BrowserPolicyTests: XCTestCase {
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://muse.ai/")!))
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.muse.ai/")!))
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://auth.meta.com/oidc")!))
+        XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://auth.muse.ai/")!))
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.facebook.com/auth_platform/continue")!))
         XCTAssertTrue(BrowserNavigationPolicy.allowsInWeb(URL(string: "https://www.instagram.com/auth_platform/continue")!))
         for value in ["http://muse.ai/", "https://muse.ai.attacker.test/", "https://attacker.test/?muse.ai",
                       "https://muse.ai:8443/", "https://user:secret@muse.ai/", "https://accounts.google.com/",
                       "https://auth.meta.com.attacker.test/oidc", "http://auth.meta.com/oidc",
                       "https://auth.meta.com:8443/oidc", "https://accountscenter.meta.com/auth_platform/",
+                      "https://auth.muse.ai.attacker.test/", "http://auth.muse.ai/",
+                      "https://auth.muse.ai:8443/", "https://user:secret@auth.muse.ai/",
                       "https://www.facebook.com/profile.php", "https://m.facebook.com/auth_platform/continue"] {
             XCTAssertFalse(BrowserNavigationPolicy.allowsInWeb(URL(string: value)!), value)
         }
         XCTAssertEqual(BrowserNavigationPolicy.verifiedLoginHosts,
-                       ["auth.meta.com", "www.facebook.com", "www.instagram.com"])
+                       ["auth.meta.com", "auth.muse.ai", "www.facebook.com", "www.instagram.com"])
         XCTAssertEqual(BrowserNavigationPolicy.displayHost(URL(string: "https://auth.meta.com/oidc?code=secret")),
                        "auth.meta.com")
         XCTAssertNil(BrowserNavigationPolicy.displayHost(URL(string: "data:text/html,secret")))

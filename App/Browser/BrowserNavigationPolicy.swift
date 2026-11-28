@@ -1,14 +1,14 @@
 import Foundation
 
 enum BrowserNavigationPolicy {
-    // Muse's public OIDC client uses these exact HTTPS origins; social-provider paths are narrowed below.
-    static let verifiedLoginHosts: Set<String> = ["auth.meta.com", "www.facebook.com", "www.instagram.com"]
+    // The Muse public client and observed login redirect identify these exact HTTPS origins.
+    static let verifiedLoginHosts: Set<String> = ["auth.meta.com", "auth.muse.ai", "www.facebook.com", "www.instagram.com"]
 
     static func allowsInWeb(_ url: URL) -> Bool {
         guard URLPolicy.isSafeExternal(url) else { return false }
         if URLPolicy.isMuse(url) { return true }
         guard let host = url.host?.lowercased(), verifiedLoginHosts.contains(host) else { return false }
-        return host == "auth.meta.com" || isMetaAuthPage(url.path)
+        return host == "auth.meta.com" || host == "auth.muse.ai" || isMetaAuthPage(url.path)
     }
 
     static func displayHost(_ url: URL?) -> String? {
